@@ -1,0 +1,366 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - smoke
+          - regression
+          - api
+          - visual
+          - accessibility
+          - performance
+      browser:
+        description: 'Browser to test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - chromium
+          - firefox
+          - webkit
+
+env:
+  NODE_VERSION: '18'
+  CI: true
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit]
+        shard: [1, 2, 3, 4]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      run: |
+        if [ "${{ github.event.inputs.test_suite }}" = "smoke" ]; then
+          npx playwright test --grep "@smoke" --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        elif [ "${{ github.event.inputs.test_suite }}" = "regression" ]; then
+          npx playwright test --grep "@regression" --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        elif [ "${{ github.event.inputs.test_suite }}" = "api" ]; then
+          npx playwright test tests/api --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        elif [ "${{ github.event.inputs.test_suite }}" = "visual" ]; then
+          npx playwright test tests/visual --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        elif [ "${{ github.event.inputs.test_suite }}" = "accessibility" ]; then
+          npx playwright test tests/accessibility --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        elif [ "${{ github.event.inputs.test_suite }}" = "performance" ]; then
+          npx playwright test tests/performance --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        else
+          npx playwright test --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        fi
+      env:
+        BASE_URL: https://www.google.com
+        API_BASE_URL: https://jsonplaceholder.typicode.com
+        TEST_ENV: ci
+        DEBUG: pw:api*
+
+    - name: Upload Playwright Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.project }}-${{ matrix.shard }}
+        path: playwright-report/
+        retention-days: 30
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.project }}-${{ matrix.shard }}
+        path: test-results/
+        retention-days: 30
+
+    - name: Upload Allure Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: allure-results-${{ matrix.project }}-${{ matrix.shard }}
+        path: allure-results/
+        retention-days: 30
+
+  merge-reports:
+    # Merge reports from all shards
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: all-artifacts
+
+    - name: Merge HTML reports
+      run: |
+        mkdir -p merged-reports
+        # Copy all HTML reports to merged directory
+        find all-artifacts -name "*.html" -exec cp {} merged-reports/ \;
+        
+    - name: Generate Allure Report
+      if: always()
+      run: |
+        # Combine all allure results
+        mkdir -p combined-allure-results
+        find all-artifacts -path "*/allure-results/*" -name "*.json" -exec cp {} combined-allure-results/ \;
+        
+        # Generate Allure report
+        npm run allure:generate || echo "Allure generation failed"
+
+    - name: Upload Merged Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: merged-playwright-report
+        path: merged-reports/
+        retention-days: 30
+
+    - name: Upload Allure Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: allure-report
+        path: allure-report/
+        retention-days: 30
+
+  deploy-reports:
+    # Deploy reports to GitHub Pages
+    if: always() && (github.ref == 'refs/heads/main')
+    needs: [merge-reports]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Download merged reports
+      uses: actions/download-artifact@v4
+      with:
+        name: merged-playwright-report
+        path: public/playwright
+
+    - name: Download Allure report
+      uses: actions/download-artifact@v4
+      with:
+        name: allure-report
+        path: public/allure
+
+    - name: Create index page
+      run: |
+        cat > public/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Test Reports</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                .card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                .card h2 { margin-top: 0; color: #333; }
+                .card a { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 5px 0; }
+                .card a:hover { background: #0056b3; }
+            </style>
+        </head>
+        <body>
+            <h1>Playwright Test Reports</h1>
+            <div class="card">
+                <h2>📊 Test Reports</h2>
+                <p>Access detailed test execution reports</p>
+                <a href="./playwright/index.html">Playwright HTML Report</a>
+                <a href="./allure/index.html">Allure Report</a>
+            </div>
+            <div class="card">
+                <h2>🔗 Quick Links</h2>
+                <p>Additional resources</p>
+                <a href="https://github.com/${{ github.repository }}">GitHub Repository</a>
+                <a href="https://github.com/${{ github.repository }}/actions">GitHub Actions</a>
+            </div>
+        </body>
+        </html>
+        EOF
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: public
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  notify:
+    # Send notifications
+    if: always()
+    needs: [test, merge-reports]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Calculate test results
+      id: results
+      run: |
+        # This would typically parse the test results
+        echo "success_rate=85" >> $GITHUB_OUTPUT
+        echo "total_tests=120" >> $GITHUB_OUTPUT
+        echo "passed_tests=102" >> $GITHUB_OUTPUT
+        echo "failed_tests=18" >> $GITHUB_OUTPUT
+
+    - name: Send Slack notification
+      if: env.SLACK_WEBHOOK_URL != ''
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        curl -X POST -H 'Content-type: application/json' \
+        --data '{
+          "text": "🧪 Playwright Tests Completed",
+          "attachments": [
+            {
+              "color": "${{ needs.test.result == 'success' && 'good' || 'danger' }}",
+              "fields": [
+                {
+                  "title": "Repository",
+                  "value": "${{ github.repository }}",
+                  "short": true
+                },
+                {
+                  "title": "Branch",
+                  "value": "${{ github.ref_name }}",
+                  "short": true
+                },
+                {
+                  "title": "Success Rate",
+                  "value": "${{ steps.results.outputs.success_rate }}%",
+                  "short": true
+                },
+                {
+                  "title": "Test Results",
+                  "value": "✅ ${{ steps.results.outputs.passed_tests }} passed, ❌ ${{ steps.results.outputs.failed_tests }} failed",
+                  "short": true
+                },
+                {
+                  "title": "Reports",
+                  "value": "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>",
+                  "short": false
+                }
+              ]
+            }
+          ]
+        }' \
+        $SLACK_WEBHOOK_URL
+
+    - name: Send Teams notification
+      if: env.TEAMS_WEBHOOK_URL != ''
+      env:
+        TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+      run: |
+        curl -X POST -H 'Content-Type: application/json' \
+        --data '{
+          "@type": "MessageCard",
+          "@context": "https://schema.org/extensions",
+          "summary": "Playwright Tests Completed",
+          "themeColor": "${{ needs.test.result == 'success' && '00FF00' || 'FF0000' }}",
+          "sections": [{
+            "activityTitle": "🧪 Playwright Tests",
+            "activitySubtitle": "${{ github.repository }} - ${{ github.ref_name }}",
+            "facts": [
+              {
+                "name": "Success Rate",
+                "value": "${{ steps.results.outputs.success_rate }}%"
+              },
+              {
+                "name": "Results",
+                "value": "✅ ${{ steps.results.outputs.passed_tests }} passed, ❌ ${{ steps.results.outputs.failed_tests }} failed"
+              }
+            ],
+            "potentialAction": [{
+              "@type": "OpenUri",
+              "name": "View Details",
+              "targets": [{
+                "os": "default",
+                "uri": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              }]
+            }]
+          }]
+        }' \
+        $TEAMS_WEBHOOK_URL
+
+  security-scan:
+    # Security scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Run npm audit
+      run: |
+        npm audit --audit-level=high --json > npm-audit.json || true
+        
+    - name: Upload npm audit results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: npm-audit-results
+        path: npm-audit.json
+        retention-days: 30

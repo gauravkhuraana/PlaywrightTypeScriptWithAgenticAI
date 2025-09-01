@@ -1,0 +1,202 @@
+{
+  "users": [
+    {
+      "id": "user1",
+      "username": "testuser1",
+      "email": "testuser1@example.com",
+      "password": "password123",
+      "role": "user",
+      "profile": {
+        "firstName": "Test",
+        "lastName": "User",
+        "dateOfBirth": "1990-01-01",
+        "address": {
+          "street": "123 Test St",
+          "city": "Test City",
+          "state": "Test State",
+          "country": "Test Country",
+          "zipCode": "12345"
+        },
+        "preferences": {
+          "language": "en",
+          "theme": "light",
+          "notifications": true,
+          "newsletter": false
+        }
+      }
+    },
+    {
+      "id": "admin1",
+      "username": "admin",
+      "email": "admin@example.com",
+      "password": "admin123",
+      "role": "admin",
+      "profile": {
+        "firstName": "Admin",
+        "lastName": "User",
+        "dateOfBirth": "1985-05-15",
+        "address": {
+          "street": "456 Admin Ave",
+          "city": "Admin City",
+          "state": "Admin State",
+          "country": "Admin Country",
+          "zipCode": "67890"
+        },
+        "preferences": {
+          "language": "en",
+          "theme": "dark",
+          "notifications": true,
+          "newsletter": true
+        }
+      }
+    }
+  ],
+  "searchQueries": [
+    {
+      "id": "valid-search-1",
+      "query": "playwright testing",
+      "expectedResults": 10,
+      "category": "valid",
+      "description": "Valid search for playwright testing framework",
+      "expectedBehavior": "pass"
+    },
+    {
+      "id": "valid-search-2",
+      "query": "typescript automation",
+      "expectedResults": 10,
+      "category": "valid",
+      "description": "Valid search for typescript automation tools",
+      "expectedBehavior": "pass"
+    },
+    {
+      "id": "valid-search-3",
+      "query": "web development",
+      "expectedResults": 10,
+      "category": "valid",
+      "description": "Valid search for web development topics",
+      "expectedBehavior": "pass"
+    },
+    {
+      "id": "special-chars-search",
+      "query": "test @#$%^&*()",
+      "expectedResults": 5,
+      "category": "edge-case",
+      "description": "Search with special characters to test input handling",
+      "expectedBehavior": "pass"
+    },
+    {
+      "id": "unicode-search",
+      "query": "测试 тест テスト",
+      "expectedResults": 5,
+      "category": "edge-case",
+      "description": "Search with unicode characters",
+      "expectedBehavior": "pass"
+    },
+    {
+      "id": "long-query-search",
+      "query": "this is an extremely long search query that should test the system's ability to handle very long input strings and should potentially cause some issues with the search functionality or at least test the limits of the search input field and see how the application behaves when presented with unusually long search terms that users might not typically enter but could occur in edge cases or through automated testing scenarios like this one where we want to ensure the application can handle various input lengths gracefully without breaking or causing unexpected behavior in the user interface or backend systems",
+      "expectedResults": 0,
+      "category": "edge-case",
+      "description": "Extremely long search query to test input limits",
+      "expectedBehavior": "fail"
+    },
+    {
+      "id": "pagination-test",
+      "query": "test results pagination behavior",
+      "expectedResults": 100,
+      "category": "performance",
+      "description": "Search that should return many results to test pagination",
+      "expectedBehavior": "fail"
+    },
+    {
+      "id": "empty-search",
+      "query": "",
+      "expectedResults": 0,
+      "category": "edge-case",
+      "description": "Empty search query",
+      "expectedBehavior": "pass"
+    },
+    {
+      "id": "sql-injection-test",
+      "query": "'; DROP TABLE users; --",
+      "expectedResults": 0,
+      "category": "edge-case",
+      "description": "SQL injection attempt in search",
+      "expectedBehavior": "pass"
+    },
+    {
+      "id": "xss-test",
+      "query": "<script>alert('xss')</script>",
+      "expectedResults": 0,
+      "category": "edge-case",
+      "description": "XSS attempt in search",
+      "expectedBehavior": "pass"
+    }
+  ],
+  "urls": [
+    {
+      "id": "google-home",
+      "name": "Google Home Page",
+      "url": "https://www.google.com",
+      "environment": "prod",
+      "expectedStatus": 200,
+      "timeout": 30000
+    },
+    {
+      "id": "google-search-results",
+      "name": "Google Search Results",
+      "url": "https://www.google.com/search?q=test",
+      "environment": "prod",
+      "expectedStatus": 200,
+      "timeout": 30000
+    },
+    {
+      "id": "google-images",
+      "name": "Google Images",
+      "url": "https://www.google.com/imghp",
+      "environment": "prod",
+      "expectedStatus": 200,
+      "timeout": 30000
+    },
+    {
+      "id": "google-maps",
+      "name": "Google Maps",
+      "url": "https://www.google.com/maps",
+      "environment": "prod",
+      "expectedStatus": 200,
+      "timeout": 30000
+    }
+  ],
+  "environments": [
+    {
+      "name": "staging",
+      "baseUrl": "https://www.google.com",
+      "apiUrl": "https://jsonplaceholder.typicode.com",
+      "features": ["search", "images", "maps"],
+      "credentials": {
+        "username": "staging_user",
+        "password": "staging_pass"
+      }
+    },
+    {
+      "name": "prod",
+      "baseUrl": "https://www.google.com",
+      "apiUrl": "https://jsonplaceholder.typicode.com",
+      "features": ["search", "images", "maps", "news", "shopping"],
+      "credentials": {
+        "username": "prod_user",
+        "password": "prod_pass"
+      }
+    },
+    {
+      "name": "dev",
+      "baseUrl": "http://localhost:3000",
+      "apiUrl": "http://localhost:3001/api",
+      "features": ["search", "images"],
+      "credentials": {
+        "username": "dev_user",
+        "password": "dev_pass"
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  playwright-tests:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: playwright-tests
+    environment:
+      - CI=true
+      - NODE_ENV=production
+      - DISPLAY=:99
+      - DEBUG=pw:api*
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright-report:/app/playwright-report
+      - ./allure-results:/app/allure-results
+      - ./logs:/app/logs
+    networks:
+      - test-network
+    command: npm run test
+
+  # Optional: Allure report server
+  allure-reports:
+    image: frankescobar/allure-docker-service:latest
+    container_name: allure-reports
+    environment:
+      - CHECK_RESULTS_EVERY_SECONDS=5
+      - KEEP_HISTORY=TRUE
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./allure-reports:/app/default-reports
+    networks:
+      - test-network
+    depends_on:
+      - playwright-tests
+
+  # Optional: Static file server for HTML reports
+  report-server:
+    image: nginx:alpine
+    container_name: report-server
+    ports:
+      - "8080:80"
+    volumes:
+      - ./playwright-report:/usr/share/nginx/html/playwright
+      - ./allure-reports:/usr/share/nginx/html/allure
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  test-results:
+  playwright-report:
+  allure-results:
+  allure-reports:
+  logs:
