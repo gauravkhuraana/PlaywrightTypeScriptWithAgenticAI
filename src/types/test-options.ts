@@ -1,6 +1,6 @@
-import { TestOptions as BaseTestOptions, PlaywrightTestOptions } from '@playwright/test';
+import { PlaywrightTestOptions } from '@playwright/test';
 
-export interface TestOptions extends BaseTestOptions, PlaywrightTestOptions {
+export interface TestOptions extends PlaywrightTestOptions {
   /**
    * Test environment (dev, staging, prod)
    */

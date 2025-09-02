@@ -2,7 +2,7 @@
 
 A modern, scalable, and modular test automation framework built with Playwright and TypeScript, featuring comprehensive testing capabilities including UI, API, visual regression, accessibility, and performance testing.
 
-[![Playwright Tests](https://github.com/gauravkhuraana/playwright-typescript-framework/actions/workflows/playwright-tests.yml/badge.svg)](https://github.com/gauravkhuraana/playwright-typescript-framework/actions/workflows/playwright-tests.yml)
+[![Playwright Tests](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/actions/workflows/playwright-tests.yml/badge.svg)](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/actions/workflows/playwright-tests.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 
@@ -44,8 +44,8 @@ A modern, scalable, and modular test automation framework built with Playwright 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/gauravkhuraana/playwright-typescript-framework.git
-   cd playwright-typescript-framework
+   git clone https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI.git
+   cd PlaywrightTypeScriptWithAgenticAI
    ```
 
 2. **Install dependencies**
@@ -66,7 +66,7 @@ A modern, scalable, and modular test automation framework built with Playwright 
 ## 📁 Project Structure
 
 ```
-playwright-typescript-framework/
+PlaywrightTypeScriptWithAgenticAI/
 ├── .github/workflows/          # GitHub Actions CI/CD
 ├── src/
 │   ├── fixtures/              # Custom test fixtures
@@ -147,9 +147,27 @@ npm run report
 npm run allure:generate
 npm run allure:serve
 
+# Test Allure configuration
+npm run allure:test
+
 # Open last HTML report
 npm run report:open
 ```
+
+### Troubleshooting Allure Reports
+
+If you see "No Allure test results available" in your CI/CD pipeline:
+
+1. **Local Verification**: Run `npm run allure:test` to verify Allure works locally
+2. **Check Results**: Ensure `allure-results/` directory contains `.json` files after test runs
+3. **Validate Configuration**: Verify `playwright.config.ts` includes the `allure-playwright` reporter
+4. **CI Debugging**: The GitHub Actions workflow includes debug steps to show artifact structure
+
+Common fixes:
+- Ensure tests are actually running in CI (check test execution logs)
+- Verify `allure-playwright` package is installed
+- Check that Allure results are being uploaded as artifacts correctly
+- Ensure the merge-reports job properly combines results from multiple shards
 
 ## 🏗️ Framework Architecture
 
@@ -349,10 +367,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 📧 Email: support@example.com
 - 💬 Slack: #test-automation
-- 🐛 Issues: [GitHub Issues](https://github.com/gauravkhuraana/playwright-typescript-framework/issues)
-- 📖 Wiki: [Documentation](https://github.com/gauravkhuraana/playwright-typescript-framework/wiki)
+- 🐛 Issues: [GitHub Issues](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/issues)
+- 📖 Wiki: [Documentation](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/wiki)
 
 ---
 

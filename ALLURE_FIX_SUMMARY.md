@@ -1,24 +1,60 @@
-# 🔧 Allure Report Artifact Fix
+# 🔧 Allure Report Issue Resolution
 
-## 📋 Problem Identified
-The GitHub Actions workflow was failing with:
+## 📋 Issue Description
+The "No Allure test results available" message was appearing in CI/CD pipeline even though Allure results were working perfectly locally with 49+ result files.
+
+## 🎯 Root Cause Analysis
+
+### Primary Issues Identified:
+1. **Artifact Collection**: GitHub Actions workflow failing to properly download and combine Allure results from multiple test shards
+2. **File Type Handling**: Missing logic to handle different Allure attachment types (videos, images, text)
+3. **Error Handling**: Insufficient debugging and fallback mechanisms
+4. **Generation Logic**: Flawed file copying and Allure report generation process
+
+## ✅ Comprehensive Fixes Applied
+
+### 1. Enhanced Artifact Download & Collection
+```yaml
+- name: Download all artifacts
+  uses: actions/download-artifact@v4
+  with:
+    path: all-artifacts
+    pattern: '*'
+    merge-multiple: false
+
+- name: Debug artifact structure
+  run: |
+    echo "=== Artifact Structure ==="
+    find all-artifacts -type f | head -20
+    echo "=== Looking for allure files ==="
+    find all-artifacts -name "*allure*" -type d
+    find all-artifacts -name "*.json" | grep -E "(result|container)" | head -10
 ```
-Error: Unable to download artifact(s): Artifact not found for name: allure-report
+
+### 2. Improved Allure Results Merging
+```yaml
+- name: Generate Allure Report
+  run: |
+    # Comprehensive file collection for all attachment types
+    find all-artifacts -type f -name "*.json" | grep -E "(result|container)" | xargs -I {} cp {} combined-allure-results/
+    find all-artifacts -type f -name "*.txt" | grep -E "attachment" | xargs -I {} cp {} combined-allure-results/
+    find all-artifacts -type f -name "*.webm" | grep -E "attachment" | xargs -I {} cp {} combined-allure-results/
+    find all-artifacts -type f -name "*.png" | grep -E "attachment" | xargs -I {} cp {} combined-allure-results/
+    find all-artifacts -type f -name "categories.json" | xargs -I {} cp {} combined-allure-results/
+    
+    # Enhanced error handling with fallbacks
+    if ! command -v allure &> /dev/null; then
+      npm install -g allure-commandline@2.24.0
+    fi
+    
+    allure generate allure-results --clean -o allure-report || {
+      npm run allure:generate || {
+        echo "Allure generation failed - creating fallback report"
+        mkdir -p allure-report
+        echo '<!DOCTYPE html>...' > allure-report/index.html
+      }
+    }
 ```
-
-## 🎯 Root Causes Found
-
-### 1. Missing Script
-- **Issue**: Workflow called `npm run allure:generate` but script didn't exist
-- **Fix**: Added `allure:generate` script to package.json
-
-### 2. No Error Handling
-- **Issue**: If Allure generation failed, the artifact wouldn't be created
-- **Fix**: Added robust error handling and conditional artifact creation
-
-### 3. Strict Dependency
-- **Issue**: Pages deployment failed if Allure wasn't available
-- **Fix**: Made Allure download optional with `continue-on-error: true`
 
 ## ✅ Fixes Applied
 

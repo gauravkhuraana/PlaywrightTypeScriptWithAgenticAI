@@ -1,4 +1,4 @@
-import { test as base, Browser, BrowserContext, Page } from '@playwright/test';
+import { test as base } from '@playwright/test';
 import { TestOptions } from '../types/test-options';
 import { TestDataManager } from '../utils/test-data-manager';
 import { ApiClient } from '../utils/api-client';
@@ -10,11 +10,6 @@ import { AccessibilityHelper } from '../utils/accessibility-helper';
 
 // Extend the base test with custom fixtures
 export const test = base.extend<TestOptions & {
-  // Browser fixtures
-  browser: Browser;
-  context: BrowserContext;
-  page: Page;
-  
   // Utility fixtures
   testDataManager: TestDataManager;
   apiClient: ApiClient;
@@ -85,13 +80,21 @@ export const test = base.extend<TestOptions & {
 
   // Enhanced browser context fixture
   context: async ({ browser, browserConfig }, use) => {
-    const context = await browser.newContext({
-      // Add any default context options
-      recordVideo: browserConfig?.recordVideo ? { dir: 'test-results/videos' } : undefined,
-      recordHar: browserConfig?.recordHar ? { path: 'test-results/har/network.har' } : undefined,
+    const contextOptions: any = {
       // Add viewport size based on device
       viewport: { width: 1920, height: 1080 }
-    });
+    };
+
+    // Add recording options if enabled
+    if (browserConfig?.recordVideo) {
+      contextOptions.recordVideo = { dir: 'test-results/videos' };
+    }
+    
+    if (browserConfig?.recordHar) {
+      contextOptions.recordHar = { path: 'test-results/har/network.har' };
+    }
+
+    const context = await browser.newContext(contextOptions);
     
     // Add event listeners for network monitoring
     context.on('page', page => {
