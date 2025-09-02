@@ -19,6 +19,7 @@
     "test:ui-mode": "npx playwright test --ui",
     "test:report": "npx playwright show-report",
     "test:allure": "allure generate allure-results --clean && allure open",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
     "install:browsers": "npx playwright install",
     "install:deps": "npx playwright install-deps",
     "codegen": "npx playwright codegen",

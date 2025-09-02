@@ -145,10 +145,21 @@ jobs:
       run: |
         # Combine all allure results
         mkdir -p combined-allure-results
-        find all-artifacts -path "*/allure-results/*" -name "*.json" -exec cp {} combined-allure-results/ \;
+        find all-artifacts -path "*/allure-results/*" -name "*.json" -exec cp {} combined-allure-results/ \; || echo "No allure results found"
         
-        # Generate Allure report
-        npm run allure:generate || echo "Allure generation failed"
+        # Check if we have any allure results
+        if [ "$(ls -A combined-allure-results)" ]; then
+          echo "Found allure results, generating report..."
+          # Copy combined results to allure-results directory
+          rm -rf allure-results
+          mv combined-allure-results allure-results
+          # Generate Allure report
+          npm run allure:generate || echo "Allure generation failed"
+        else
+          echo "No allure results found, creating empty allure report directory"
+          mkdir -p allure-report
+          echo '<!DOCTYPE html><html><head><title>No Allure Results</title></head><body><h1>No Allure test results available</h1><p>Allure reporter may not be configured or no tests were run.</p></body></html>' > allure-report/index.html
+        fi
 
     - name: Upload Merged Report
       uses: actions/upload-artifact@v4
@@ -160,7 +171,7 @@ jobs:
 
     - name: Upload Allure Report
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && hashFiles('allure-report/**/*') != ''
       with:
         name: allure-report
         path: allure-report/
@@ -210,11 +221,34 @@ jobs:
       with:
         name: allure-report
         path: public/allure
+      continue-on-error: true
+
+    - name: Check Allure availability
+      if: steps.pages-check.outputs.pages_enabled == 'true'
+      id: allure-check
+      run: |
+        if [ -d "public/allure" ] && [ "$(ls -A public/allure)" ]; then
+          echo "allure_available=true" >> $GITHUB_OUTPUT
+          echo "✅ Allure report available"
+        else
+          echo "allure_available=false" >> $GITHUB_OUTPUT
+          echo "⚠️ Allure report not available"
+          mkdir -p public/allure
+          echo '<!DOCTYPE html><html><head><title>Allure Unavailable</title></head><body><h1>Allure Report Unavailable</h1><p>The Allure report could not be generated or downloaded.</p></body></html>' > public/allure/index.html
+        fi
 
     - name: Create index page
       if: steps.pages-check.outputs.pages_enabled == 'true'
       run: |
-        cat > public/index.html << 'EOF'
+        # Create the index page with conditional Allure link
+        allure_link=""
+        if [ "${{ steps.allure-check.outputs.allure_available }}" == "true" ]; then
+          allure_link='<a href="./allure/index.html">Allure Report</a>'
+        else
+          allure_link='<a href="./allure/index.html" style="background: #6c757d;">Allure Report (Unavailable)</a>'
+        fi
+        
+        cat > public/index.html << EOF
         <!DOCTYPE html>
         <html>
         <head>
@@ -225,6 +259,7 @@ jobs:
                 .card h2 { margin-top: 0; color: #333; }
                 .card a { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin: 5px 0; }
                 .card a:hover { background: #0056b3; }
+                .status { font-size: 0.9em; color: #666; margin-top: 10px; }
             </style>
         </head>
         <body>
@@ -233,7 +268,11 @@ jobs:
                 <h2>📊 Test Reports</h2>
                 <p>Access detailed test execution reports</p>
                 <a href="./playwright/index.html">Playwright HTML Report</a>
-                <a href="./allure/index.html">Allure Report</a>
+                ${allure_link}
+                <div class="status">
+                  <p>Report generated: $(date)</p>
+                  <p>Allure status: ${{ steps.allure-check.outputs.allure_available == 'true' && 'Available' || 'Not Available' }}</p>
+                </div>
             </div>
             <div class="card">
                 <h2>🔗 Quick Links</h2>
