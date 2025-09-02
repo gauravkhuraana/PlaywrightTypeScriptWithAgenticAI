@@ -67,8 +67,8 @@ export class ApiClient {
     try {
       const context = await this.getContext();
       const response = await context.get(endpoint, {
-        params: options?.params,
-        headers: options?.headers,
+        ...(options?.params && { params: options.params }),
+        ...(options?.headers && { headers: options.headers }),
         timeout: options?.timeout || this.timeout
       });
 

@@ -2,7 +2,7 @@
 
 A modern, scalable, and modular test automation framework built with Playwright and TypeScript, featuring comprehensive testing capabilities including UI, API, visual regression, accessibility, and performance testing.
 
-[![Playwright Tests](https://github.com/your-username/playwright-typescript-framework/actions/workflows/playwright-tests.yml/badge.svg)](https://github.com/your-username/playwright-typescript-framework/actions/workflows/playwright-tests.yml)
+[![Playwright Tests](https://github.com/gauravkhuraana/playwright-typescript-framework/actions/workflows/playwright-tests.yml/badge.svg)](https://github.com/gauravkhuraana/playwright-typescript-framework/actions/workflows/playwright-tests.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 
@@ -44,7 +44,7 @@ A modern, scalable, and modular test automation framework built with Playwright 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/playwright-typescript-framework.git
+   git clone https://github.com/gauravkhuraana/playwright-typescript-framework.git
    cd playwright-typescript-framework
    ```
 
@@ -155,36 +155,42 @@ npm run report:open
 
 ### Page Object Model
 ```typescript
-// Example: Google Home Page
-export class GoogleHomePage extends BasePage {
-  private readonly searchBox: Locator;
-  private readonly searchButton: Locator;
+// Example: Example.com Page (automation-friendly test site)
+export class ExamplePage extends BasePage {
+  private readonly pageHeading: Locator;
+  private readonly pageDescription: Locator;
+  private readonly moreInfoLink: Locator;
 
-  constructor(page: Page) {
-    super(page);
-    this.searchBox = page.locator('input[name="q"]');
-    this.searchButton = page.locator('input[value*="Search"]');
+  constructor(page: Page, logger?: Logger) {
+    super(page, logger || new Logger('ExamplePage'), 'https://example.com');
+    this.pageHeading = page.locator('h1');
+    this.pageDescription = page.locator('p');
+    this.moreInfoLink = page.locator('a[href*="iana.org"]');
   }
 
-  async performSearch(query: string): Promise<void> {
-    await this.searchBox.fill(query);
-    await this.searchButton.click();
+  async validatePageStructure(): Promise<boolean> {
+    const heading = await this.getHeading();
+    const description = await this.getDescription();
+    return heading.includes('Example Domain') && description.length > 0;
   }
 }
 ```
 
 ### Custom Fixtures
 ```typescript
-// Example: Using custom fixtures
-test('should perform search with fixtures', async ({ 
-  googleHomePage, 
+// Example: Using custom fixtures with automation-friendly sites
+test('should validate example page with fixtures', async ({ 
+  examplePage, 
   logger, 
   testDataManager 
 }) => {
-  const searchTerm = testDataManager.get('searchTerm');
-  await googleHomePage.navigate();
-  await googleHomePage.performSearch(searchTerm);
-  logger.info(`Searched for: ${searchTerm}`);
+  await examplePage.goto();
+  await examplePage.waitForPageLoad();
+  
+  const isValid = await examplePage.hasExpectedContent();
+  expect(isValid).toBe(true);
+  
+  logger.info('Example page validation completed');
 });
 ```
 
@@ -222,9 +228,9 @@ docker-compose run playwright-tests npx playwright test --grep "@api"
 
 ### Environment Variables
 ```bash
-# Core configuration
-BASE_URL=https://www.google.com
-API_BASE_URL=https://jsonplaceholder.typicode.com
+# Core configuration - using automation-friendly sites
+BASE_URL=https://example.com
+API_BASE_URL=https://httpbin.org
 TEST_ENV=staging
 CI=true
 
@@ -345,8 +351,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - 📧 Email: support@example.com
 - 💬 Slack: #test-automation
-- 🐛 Issues: [GitHub Issues](https://github.com/your-username/playwright-typescript-framework/issues)
-- 📖 Wiki: [Documentation](https://github.com/your-username/playwright-typescript-framework/wiki)
+- 🐛 Issues: [GitHub Issues](https://github.com/gauravkhuraana/playwright-typescript-framework/issues)
+- 📖 Wiki: [Documentation](https://github.com/gauravkhuraana/playwright-typescript-framework/wiki)
 
 ---
 

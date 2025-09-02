@@ -167,7 +167,7 @@ jobs:
         retention-days: 30
 
   deploy-reports:
-    # Deploy reports to GitHub Pages
+    # Deploy reports to GitHub Pages (optional - will skip if Pages not enabled)
     if: always() && (github.ref == 'refs/heads/main')
     needs: [merge-reports]
     runs-on: ubuntu-latest
@@ -180,21 +180,39 @@ jobs:
     
     steps:
     - name: Setup Pages
+      id: setup-pages
       uses: actions/configure-pages@v4
+      with:
+        # Enable Pages if not already enabled
+        enablement: true
+      continue-on-error: true
+
+    - name: Check if Pages setup succeeded
+      id: pages-check
+      run: |
+        if [ "${{ steps.setup-pages.outcome }}" == "success" ]; then
+          echo "pages_enabled=true" >> $GITHUB_OUTPUT
+        else
+          echo "pages_enabled=false" >> $GITHUB_OUTPUT
+          echo "⚠️ GitHub Pages not available - skipping deployment"
+        fi
 
     - name: Download merged reports
+      if: steps.pages-check.outputs.pages_enabled == 'true'
       uses: actions/download-artifact@v4
       with:
         name: merged-playwright-report
         path: public/playwright
 
     - name: Download Allure report
+      if: steps.pages-check.outputs.pages_enabled == 'true'
       uses: actions/download-artifact@v4
       with:
         name: allure-report
         path: public/allure
 
     - name: Create index page
+      if: steps.pages-check.outputs.pages_enabled == 'true'
       run: |
         cat > public/index.html << 'EOF'
         <!DOCTYPE html>
@@ -228,11 +246,13 @@ jobs:
         EOF
 
     - name: Upload Pages artifact
+      if: steps.pages-check.outputs.pages_enabled == 'true'
       uses: actions/upload-pages-artifact@v3
       with:
         path: public
 
     - name: Deploy to GitHub Pages
+      if: steps.pages-check.outputs.pages_enabled == 'true'
       id: deployment
       uses: actions/deploy-pages@v4
 

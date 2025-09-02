@@ -6,18 +6,18 @@ test.describe('API Integration Tests', () => {
     allure.feature('API Testing');
   });
 
-  test('should get posts from JSONPlaceholder API @api @smoke', async ({
+  test('should test GET request with httpbin @api @smoke', async ({
     apiClient,
     logger
   }) => {
-    allure.story('GET Posts');
-    allure.description('This test validates the GET /posts endpoint from JSONPlaceholder API');
+    allure.story('GET Request Testing');
+    allure.description('This test validates GET requests using httpbin.org testing service');
     allure.severity('critical');
     
-    logger.step('Starting GET posts API test');
+    logger.step('Starting GET request API test');
     
-    // Get all posts
-    const response = await apiClient.get('/posts');
+    // Test GET request with query parameters
+    const response = await apiClient.get('/get?param1=value1&param2=value2');
     
     // Validate response status
     expect(response.status).toBe(200);
@@ -25,185 +25,176 @@ test.describe('API Integration Tests', () => {
     
     // Validate response structure
     expect(response.data).toBeDefined();
-    expect(Array.isArray(response.data)).toBeTruthy();
-    expect(response.data.length).toBeGreaterThan(0);
+    expect(response.data.args).toBeDefined();
+    expect(response.data.headers).toBeDefined();
+    expect(response.data.url).toBeDefined();
+    
+    // Validate query parameters were received
+    expect(response.data.args.param1).toBe('value1');
+    expect(response.data.args.param2).toBe('value2');
     
     // Validate response time
     expect(apiClient.validateResponseTime(response, 5000)).toBeTruthy();
     
-    // Validate first post structure
-    const firstPost = response.data[0];
-    expect(firstPost).toHaveProperty('id');
-    expect(firstPost).toHaveProperty('title');
-    expect(firstPost).toHaveProperty('body');
-    expect(firstPost).toHaveProperty('userId');
-    
-    logger.info(`Retrieved ${response.data.length} posts`);
+    logger.info(`Response URL: ${response.data.url}`);
     logger.info(`Response time: ${response.responseTime}ms`);
+    logger.info(`Query params received: ${JSON.stringify(response.data.args)}`);
     
     // Attach response data to allure report
     allure.attachment('Response Status', response.status.toString(), 'text/plain');
     allure.attachment('Response Time', `${response.responseTime}ms`, 'text/plain');
-    allure.attachment('Posts Count', response.data.length.toString(), 'text/plain');
-    allure.attachment('First Post', JSON.stringify(firstPost, null, 2), 'application/json');
+    allure.attachment('Query Parameters', JSON.stringify(response.data.args, null, 2), 'application/json');
+    allure.attachment('Response Headers', JSON.stringify(response.data.headers, null, 2), 'application/json');
     
-    logger.success('✅ GET posts API test passed');
+    logger.success('✅ GET request API test passed');
   });
 
-  test('should get specific post by ID @api @smoke', async ({
+  test('should test JSON data with httpbin @api @smoke', async ({
     apiClient,
     logger
   }) => {
-    allure.story('GET Post by ID');
-    allure.description('This test validates getting a specific post by ID');
+    allure.story('GET JSON Data');
+    allure.description('This test validates getting JSON data from httpbin');
     allure.severity('normal');
     
-    logger.step('Starting GET post by ID API test');
+    logger.step('Starting GET JSON data API test');
     
-    const postId = 1;
-    
-    // Get specific post
-    const response = await apiClient.get(`/posts/${postId}`);
+    // Get JSON data
+    const response = await apiClient.get('/json');
     
     // Validate response
     expect(response.status).toBe(200);
     expect(response.data).toBeDefined();
-    expect(response.data.id).toBe(postId);
     
-    // Validate post structure
-    expect(response.data).toHaveProperty('title');
-    expect(response.data).toHaveProperty('body');
-    expect(response.data).toHaveProperty('userId');
+    // httpbin /json returns a sample JSON object
+    expect(typeof response.data).toBe('object');
     
-    // Validate data types
-    expect(typeof response.data.id).toBe('number');
-    expect(typeof response.data.title).toBe('string');
-    expect(typeof response.data.body).toBe('string');
-    expect(typeof response.data.userId).toBe('number');
-    
-    logger.info(`Retrieved post ${postId}: "${response.data.title}"`);
+    logger.info(`JSON data received: ${JSON.stringify(response.data)}`);
     logger.info(`Response time: ${response.responseTime}ms`);
     
     // Attach response data to allure report
-    allure.attachment('Post ID', postId.toString(), 'text/plain');
     allure.attachment('Response Time', `${response.responseTime}ms`, 'text/plain');
-    allure.attachment('Post Data', JSON.stringify(response.data, null, 2), 'application/json');
+    allure.attachment('JSON Data', JSON.stringify(response.data, null, 2), 'application/json');
     
-    logger.success('✅ GET post by ID API test passed');
+    logger.success('✅ GET JSON data API test passed');
   });
 
-  test('should create new post @api @crud', async ({
+  test('should test POST request with httpbin @api @crud', async ({
     apiClient,
     logger
   }) => {
-    allure.story('POST Create Post');
-    allure.description('This test validates creating a new post via POST');
+    allure.story('POST Request Testing');
+    allure.description('This test validates POST requests using httpbin');
     allure.severity('normal');
     
-    logger.step('Starting POST create post API test');
+    logger.step('Starting POST request API test');
     
-    const newPost = {
-      title: 'Test Post Title',
-      body: 'This is a test post body created by automated tests',
-      userId: 1
+    const testData = {
+      name: 'Test User',
+      email: 'test@example.com',
+      message: 'This is a test message from automated tests'
     };
     
-    // Create new post
-    const response = await apiClient.post('/posts', newPost);
-    
-    // Validate response status (JSONPlaceholder returns 201 for POST)
-    expect(response.status).toBe(201);
-    expect(response.data).toBeDefined();
-    
-    // Validate created post data
-    expect(response.data.title).toBe(newPost.title);
-    expect(response.data.body).toBe(newPost.body);
-    expect(response.data.userId).toBe(newPost.userId);
-    expect(response.data.id).toBeDefined();
-    expect(typeof response.data.id).toBe('number');
-    
-    logger.info(`Created post with ID: ${response.data.id}`);
-    logger.info(`Response time: ${response.responseTime}ms`);
-    
-    // Attach test data to allure report
-    allure.attachment('Request Data', JSON.stringify(newPost, null, 2), 'application/json');
-    allure.attachment('Response Status', response.status.toString(), 'text/plain');
-    allure.attachment('Response Time', `${response.responseTime}ms`, 'text/plain');
-    allure.attachment('Created Post', JSON.stringify(response.data, null, 2), 'application/json');
-    
-    logger.success('✅ POST create post API test passed');
-  });
-
-  test('should update existing post @api @crud', async ({
-    apiClient,
-    logger
-  }) => {
-    allure.story('PUT Update Post');
-    allure.description('This test validates updating an existing post via PUT');
-    allure.severity('normal');
-    
-    logger.step('Starting PUT update post API test');
-    
-    const postId = 1;
-    const updatedPost = {
-      id: postId,
-      title: 'Updated Test Post Title',
-      body: 'This is an updated test post body',
-      userId: 1
-    };
-    
-    // Update existing post
-    const response = await apiClient.put(`/posts/${postId}`, updatedPost);
+    // Create POST request
+    const response = await apiClient.post('/post', testData);
     
     // Validate response status
     expect(response.status).toBe(200);
     expect(response.data).toBeDefined();
     
-    // Validate updated post data
-    expect(response.data.id).toBe(postId);
-    expect(response.data.title).toBe(updatedPost.title);
-    expect(response.data.body).toBe(updatedPost.body);
-    expect(response.data.userId).toBe(updatedPost.userId);
+    // Validate that httpbin echoed back our data
+    expect(response.data.json).toBeDefined();
+    expect(response.data.json.name).toBe(testData.name);
+    expect(response.data.json.email).toBe(testData.email);
+    expect(response.data.json.message).toBe(testData.message);
     
-    logger.info(`Updated post ${postId}: "${response.data.title}"`);
+    // Validate headers were sent
+    expect(response.data.headers).toBeDefined();
+    
+    logger.info(`POST data sent: ${JSON.stringify(testData)}`);
     logger.info(`Response time: ${response.responseTime}ms`);
     
     // Attach test data to allure report
-    allure.attachment('Post ID', postId.toString(), 'text/plain');
-    allure.attachment('Request Data', JSON.stringify(updatedPost, null, 2), 'application/json');
+    allure.attachment('Request Data', JSON.stringify(testData, null, 2), 'application/json');
+    allure.attachment('Response Status', response.status.toString(), 'text/plain');
     allure.attachment('Response Time', `${response.responseTime}ms`, 'text/plain');
-    allure.attachment('Updated Post', JSON.stringify(response.data, null, 2), 'application/json');
+    allure.attachment('Echoed Data', JSON.stringify(response.data.json, null, 2), 'application/json');
     
-    logger.success('✅ PUT update post API test passed');
+    logger.success('✅ POST request API test passed');
   });
 
-  test('should delete post @api @crud', async ({
+  test('should test PUT request with httpbin @api @crud', async ({
     apiClient,
     logger
   }) => {
-    allure.story('DELETE Post');
-    allure.description('This test validates deleting a post via DELETE');
+    allure.story('PUT Request Testing');
+    allure.description('This test validates PUT requests using httpbin');
     allure.severity('normal');
     
-    logger.step('Starting DELETE post API test');
+    logger.step('Starting PUT request API test');
     
-    const postId = 1;
+    const updateData = {
+      id: 123,
+      name: 'Updated Test User',
+      email: 'updated@example.com',
+      status: 'active'
+    };
     
-    // Delete post
-    const response = await apiClient.delete(`/posts/${postId}`);
+    // Update via PUT request
+    const response = await apiClient.put('/put', updateData);
     
     // Validate response status
     expect(response.status).toBe(200);
+    expect(response.data).toBeDefined();
     
-    logger.info(`Deleted post ${postId}`);
+    // Validate that httpbin echoed back our data
+    expect(response.data.json).toBeDefined();
+    expect(response.data.json.id).toBe(updateData.id);
+    expect(response.data.json.name).toBe(updateData.name);
+    expect(response.data.json.email).toBe(updateData.email);
+    expect(response.data.json.status).toBe(updateData.status);
+    
+    logger.info(`PUT data sent: ${JSON.stringify(updateData)}`);
     logger.info(`Response time: ${response.responseTime}ms`);
     
     // Attach test data to allure report
-    allure.attachment('Post ID', postId.toString(), 'text/plain');
+    allure.attachment('Request Data', JSON.stringify(updateData, null, 2), 'application/json');
+    allure.attachment('Response Time', `${response.responseTime}ms`, 'text/plain');
+    allure.attachment('Echoed Data', JSON.stringify(response.data.json, null, 2), 'application/json');
+    
+    logger.success('✅ PUT request API test passed');
+  });
+
+  test('should test DELETE request with httpbin @api @crud', async ({
+    apiClient,
+    logger
+  }) => {
+    allure.story('DELETE Request Testing');
+    allure.description('This test validates DELETE requests using httpbin');
+    allure.severity('normal');
+    
+    logger.step('Starting DELETE request API test');
+    
+    // Delete request
+    const response = await apiClient.delete('/delete');
+    
+    // Validate response status
+    expect(response.status).toBe(200);
+    expect(response.data).toBeDefined();
+    
+    // Validate delete response structure
+    expect(response.data.url).toBeDefined();
+    expect(response.data.headers).toBeDefined();
+    
+    logger.info(`DELETE request completed`);
+    logger.info(`Response time: ${response.responseTime}ms`);
+    
+    // Attach test data to allure report
     allure.attachment('Response Status', response.status.toString(), 'text/plain');
     allure.attachment('Response Time', `${response.responseTime}ms`, 'text/plain');
+    allure.attachment('Response Data', JSON.stringify(response.data, null, 2), 'application/json');
     
-    logger.success('✅ DELETE post API test passed');
+    logger.success('✅ DELETE request API test passed');
   });
 
   test('should handle API error responses @api @error-handling', async ({
@@ -216,36 +207,26 @@ test.describe('API Integration Tests', () => {
     
     logger.step('Starting API error handling test');
     
-    // Try to get non-existent post
-    const nonExistentId = 99999;
-    
+    // Try to get a status that returns an error
     try {
-      const response = await apiClient.get(`/posts/${nonExistentId}`);
+      const response = await apiClient.get('/status/404');
       
-      // JSONPlaceholder returns empty object for non-existent resources
-      expect(response.status).toBe(200);
+      // httpbin /status/{code} returns the specified status code
+      expect(response.status).toBe(404);
       
-      // Check if response is empty or contains error indication
-      if (Object.keys(response.data).length === 0) {
-        logger.info('Received empty response for non-existent resource (expected behavior)');
-      }
-      
-      logger.info(`Response for non-existent post ${nonExistentId}:`);
-      logger.info(`Status: ${response.status}`);
-      logger.info(`Data: ${JSON.stringify(response.data)}`);
+      logger.info('Received expected 404 status code');
       logger.info(`Response time: ${response.responseTime}ms`);
       
       // Attach test data to allure report
-      allure.attachment('Non-existent Post ID', nonExistentId.toString(), 'text/plain');
-      allure.attachment('Response Status', response.status.toString(), 'text/plain');
-      allure.attachment('Response Data', JSON.stringify(response.data, null, 2), 'application/json');
+      allure.attachment('Expected Status Code', '404', 'text/plain');
+      allure.attachment('Actual Status Code', response.status.toString(), 'text/plain');
       allure.attachment('Response Time', `${response.responseTime}ms`, 'text/plain');
       
     } catch (error) {
-      logger.info(`Error handling test caught expected error: ${error}`);
+      logger.info(`Error handling test caught expected error: ${String(error)}`);
       
       // If an error is thrown, that's also valid behavior
-      allure.attachment('Error Details', error.toString(), 'text/plain');
+      allure.attachment('Error Details', String(error), 'text/plain');
     }
     
     logger.success('✅ API error handling test passed');

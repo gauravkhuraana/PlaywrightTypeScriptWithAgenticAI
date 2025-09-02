@@ -1,22 +1,14 @@
 import { test as base } from './base-fixtures';
-import { GoogleHomePage } from '../pages/google-home-page';
-import { GoogleSearchResultsPage } from '../pages/google-search-results-page';
+import { ExamplePage } from '../pages/example-page';
 
 // Extend base fixtures with page object fixtures
 export const test = base.extend<{
-  googleHomePage: GoogleHomePage;
-  googleSearchResultsPage: GoogleSearchResultsPage;
+  examplePage: ExamplePage;
 }>({
-  // Google Home Page fixture
-  googleHomePage: async ({ page, logger }, use) => {
-    const googleHomePage = new GoogleHomePage(page, logger);
-    await use(googleHomePage);
-  },
-
-  // Google Search Results Page fixture
-  googleSearchResultsPage: async ({ page, logger }, use) => {
-    const googleSearchResultsPage = new GoogleSearchResultsPage(page, logger);
-    await use(googleSearchResultsPage);
+  // Example Page fixture (automation-friendly test site)
+  examplePage: async ({ page, logger }, use) => {
+    const examplePage = new ExamplePage(page, logger);
+    await use(examplePage);
   }
 });
 

@@ -45,13 +45,24 @@ export default class CustomReporter implements Reporter {
     const duration = result.duration;
     const status = result.status;
     
-    this.results.push({
+    const resultData: {
+      title: string;
+      status: string;
+      duration: number;
+      error?: string;
+      projectName: string;
+    } = {
       title: test.title,
       status,
       duration,
-      error: result.error?.message,
       projectName: test.parent.project()?.name || 'unknown'
-    });
+    };
+
+    if (result.error?.message) {
+      resultData.error = result.error.message;
+    }
+
+    this.results.push(resultData);
 
     switch (status) {
       case 'passed':
@@ -96,7 +107,7 @@ export default class CustomReporter implements Reporter {
     this.generateMetricsReport();
 
     // Send notifications if configured
-    if (process.env.ENABLE_NOTIFICATIONS === 'true') {
+    if (process.env['ENABLE_NOTIFICATIONS'] === 'true') {
       this.sendNotifications(result, successRate, totalDuration);
     }
   }
@@ -117,7 +128,7 @@ export default class CustomReporter implements Reporter {
         nodeVersion: process.version,
         platform: process.platform,
         arch: process.arch,
-        ci: !!process.env.CI
+        ci: !!process.env['CI']
       }
     };
 
@@ -310,17 +321,17 @@ ${this.failedTests > 0 ? '⚠️ Some tests failed. Please check the detailed re
       `;
 
       // Slack notification
-      if (process.env.SLACK_WEBHOOK_URL) {
+      if (process.env['SLACK_WEBHOOK_URL']) {
         await this.sendSlackNotification(message);
       }
 
       // Teams notification
-      if (process.env.TEAMS_WEBHOOK_URL) {
+      if (process.env['TEAMS_WEBHOOK_URL']) {
         await this.sendTeamsNotification(message);
       }
 
       // Email notification
-      if (process.env.EMAIL_ENABLED === 'true') {
+      if (process.env['EMAIL_ENABLED'] === 'true') {
         await this.sendEmailNotification(message);
       }
 

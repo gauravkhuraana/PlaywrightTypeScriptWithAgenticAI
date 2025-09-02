@@ -49,7 +49,7 @@ export default defineConfig<TestOptions>({
   // Shared settings for all projects
   use: {
     // Base URL for all tests
-    baseURL: process.env.BASE_URL || 'https://www.google.com',
+    baseURL: process.env.BASE_URL || 'https://example.com',
     
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
@@ -72,7 +72,7 @@ export default defineConfig<TestOptions>({
     
     // Custom test options
     environment: process.env.TEST_ENV || 'staging',
-    apiBaseURL: process.env.API_BASE_URL || 'https://jsonplaceholder.typicode.com',
+    apiBaseURL: process.env['API_BASE_URL'] || 'https://httpbin.org',
     
     // User agent
     userAgent: 'Playwright Test Automation Framework'
@@ -159,7 +159,7 @@ export default defineConfig<TestOptions>({
       name: 'api',
       testMatch: '**/api/**/*.spec.ts',
       use: {
-        baseURL: process.env.API_BASE_URL || 'https://jsonplaceholder.typicode.com'
+        baseURL: process.env['API_BASE_URL'] || 'https://httpbin.org'
       }
     },
     
