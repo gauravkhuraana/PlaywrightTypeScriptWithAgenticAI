@@ -57,25 +57,26 @@ export const test = base.extend<TestOptions & {
   },
 
   // Performance helper fixture
-  performanceHelper: async ({ page, enablePerformanceTesting }, use) => {
-    if (!enablePerformanceTesting) {
-      await use(undefined as any);
-      return;
-    }
-    
+  performanceHelper: async ({ page }, use) => {
     const performanceHelper = new PerformanceHelper(page);
     await use(performanceHelper);
   },
 
   // Accessibility helper fixture
-  accessibilityHelper: async ({ page, enableAccessibilityTesting }, use) => {
-    if (!enableAccessibilityTesting) {
-      await use(undefined as any);
-      return;
-    }
-    
+  accessibilityHelper: async ({ page }, use) => {
     const accessibilityHelper = new AccessibilityHelper(page);
     await use(accessibilityHelper);
+  },
+
+  // Browser configuration fixture
+  browserConfig: async ({}, use) => {
+    const config = {
+      slowMo: 0,
+      devtools: false,
+      recordVideo: false,
+      recordHar: false
+    };
+    await use(config);
   },
 
   // Enhanced browser context fixture
