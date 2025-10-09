@@ -511,6 +511,103 @@ import { TestData } from '@types/test-data';
 
 ---
 
+## 🛠️ Common Utility Patterns
+
+### Helper Class Pattern
+Helper utilities follow a consistent pattern across the codebase:
+
+#### Example: PerformanceHelper
+```typescript
+export class PerformanceHelper {
+  private readonly page: Page;
+  private readonly logger: Logger;
+
+  constructor(page: Page) {
+    this.page = page;
+    this.logger = new Logger('PerformanceHelper');
+  }
+
+  async getMemoryUsage(): Promise<{
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+  }> {
+    this.logger.info('Collecting memory usage');
+    
+    const memoryInfo = await this.page.evaluate(() => {
+      const memory = (performance as any).memory;
+      if (memory) {
+        return {
+          usedJSHeapSize: memory.usedJSHeapSize,
+          totalJSHeapSize: memory.totalJSHeapSize,
+          jsHeapSizeLimit: memory.jsHeapSizeLimit
+        };
+      }
+      return {
+        usedJSHeapSize: 0,
+        totalJSHeapSize: 0,
+        jsHeapSizeLimit: 0
+      };
+    });
+
+    this.logger.info('Memory usage collected:', memoryInfo);
+    return memoryInfo;
+  }
+}
+```
+
+#### Example: ApiClient with Configuration
+```typescript
+export class ApiClient {
+  private readonly baseUrl: string;
+  private readonly timeout: number;
+  private readonly retries: number;
+  private readonly headers: Record<string, string>;
+  private readonly logger: Logger;
+  private apiContext: APIRequestContext | null = null;
+
+  constructor(
+    baseUrl: string,
+    config?: {
+      timeout?: number;
+      retries?: number;
+      headers?: Record<string, string>;
+    }
+  ) {
+    this.baseUrl = baseUrl;
+    this.timeout = config?.timeout || 30000;
+    this.retries = config?.retries || 3;
+    this.headers = config?.headers || {};
+    this.logger = new Logger('ApiClient');
+  }
+
+  async get<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+    const context = await this.getContext();
+    const startTime = Date.now();
+    const response = await context.get(endpoint);
+    const responseTime = Date.now() - startTime;
+    
+    return {
+      status: response.status(),
+      statusText: response.statusText(),
+      headers: response.headers(),
+      data: await response.json() as T,
+      responseTime
+    };
+  }
+}
+```
+
+### Helper Class Characteristics:
+- **Constructor Injection**: Accept dependencies via constructor
+- **Private Members**: Internal state is private
+- **Logger Integration**: Each helper has its own logger
+- **Type-Safe Returns**: Use TypeScript types for return values
+- **Error Handling**: Comprehensive error handling with logging
+- **Configuration Objects**: Use optional config objects with defaults
+
+---
+
 ## 🎯 Symbol Definition Summary
 
 ### Key Patterns Used
@@ -552,6 +649,66 @@ import { TestData } from '@types/test-data';
 - **Project Structure**: See `README.md` for directory organization
 - **Code Examples**: See `tests/` directory for usage examples
 - **Implementation Details**: See `IMPLEMENTATION_SUMMARY.md` for framework overview
+
+---
+
+## 🔍 How to Find and Use Symbols
+
+### Looking for Data Types?
+➡️ Go to `src/types/test-data.ts`
+```typescript
+import { User, TestData, ApiResponse } from '../types/test-data';
+```
+
+### Need a Page Object?
+➡️ Check `src/pages/` directory
+```typescript
+import { GoogleHomePage } from '../pages/google-home-page';
+import { BasePage } from '../pages/base-page';
+```
+
+### Want to Use a Utility?
+➡️ Browse `src/utils/` directory
+```typescript
+import { Logger } from '../utils/logger';
+import { ApiClient } from '../utils/api-client';
+import { PerformanceHelper } from '../utils/performance-helper';
+```
+
+### Setting up Test Fixtures?
+➡️ Import from `src/fixtures/base-fixtures.ts`
+```typescript
+import { test, expect } from '../fixtures/base-fixtures';
+
+test('my test', async ({ logger, apiClient, performanceHelper }) => {
+  // Use injected fixtures
+});
+```
+
+### Configuration Options?
+➡️ See `src/types/test-options.ts`
+```typescript
+import { TestOptions } from '../types/test-options';
+```
+
+---
+
+## ✅ Best Practices Checklist
+
+When defining new symbols in this repository:
+
+- [ ] Use **PascalCase** for classes and interfaces
+- [ ] Use **camelCase** for methods, variables, and fixtures  
+- [ ] Use **kebab-case** for file names
+- [ ] Export interfaces from `src/types/` for reusability
+- [ ] Extend `BasePage` for new page objects
+- [ ] Include a `Logger` in utility classes
+- [ ] Add JSDoc comments for public methods
+- [ ] Use `private readonly` for class properties that won't change
+- [ ] Use `async/await` for asynchronous operations
+- [ ] Return typed promises (`Promise<Type>`)
+- [ ] Provide default values for optional parameters
+- [ ] Use descriptive, self-documenting names
 
 ---
 
