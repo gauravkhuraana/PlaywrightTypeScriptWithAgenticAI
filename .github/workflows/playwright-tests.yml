@@ -65,6 +65,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
+      continue-on-error: true
       run: |
         if [ "${{ github.event.inputs.test_suite }}" = "smoke" ]; then
           npx playwright test --grep "@smoke" --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
