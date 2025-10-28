@@ -129,9 +129,9 @@ export class TestDataManager {
       ],
       urls: [
         {
-          id: 'google-home',
-          name: 'Google Home Page',
-          url: 'https://www.google.com',
+          id: 'example-home',
+          name: 'Example Home Page',
+          url: 'https://example.com',
           environment: 'prod',
           expectedStatus: 200,
           timeout: 30000
@@ -140,9 +140,9 @@ export class TestDataManager {
       environments: [
         {
           name: 'staging',
-          baseUrl: 'https://www.google.com',
+          baseUrl: 'https://example.com',
           apiUrl: 'https://jsonplaceholder.typicode.com',
-          features: ['search', 'images', 'maps'],
+          features: ['basic'],
           credentials: {
             username: 'staging_user',
             password: 'staging_pass'
@@ -150,9 +150,9 @@ export class TestDataManager {
         },
         {
           name: 'prod',
-          baseUrl: 'https://www.google.com',
+          baseUrl: 'https://example.com',
           apiUrl: 'https://jsonplaceholder.typicode.com',
-          features: ['search', 'images', 'maps', 'news'],
+          features: ['basic'],
           credentials: {
             username: 'prod_user',
             password: 'prod_pass'

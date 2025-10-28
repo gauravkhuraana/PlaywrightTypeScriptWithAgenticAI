@@ -16,7 +16,7 @@ export class ExamplePage extends BasePage {
     
     // Define locators for example.com elements - be specific to avoid strict mode violations
     this.pageHeading = page.locator('h1');
-    this.pageDescription = page.locator('p').first(); // Get the first paragraph to avoid multiple matches
+    this.pageDescription = page.locator("p").first(); // Get the first paragraph to avoid multiple matches
     this.moreInfoLink = page.locator('a[href*="iana.org"]');
   }
 

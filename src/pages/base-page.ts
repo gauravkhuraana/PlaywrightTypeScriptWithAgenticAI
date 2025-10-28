@@ -13,7 +13,7 @@ export abstract class BasePage {
   constructor(page: Page, logger: Logger, baseUrl?: string) {
     this.page = page;
     this.logger = logger;
-    this.baseUrl = baseUrl || 'https://www.google.com';
+    this.baseUrl = baseUrl || 'https://example.com';
   }
 
   /**

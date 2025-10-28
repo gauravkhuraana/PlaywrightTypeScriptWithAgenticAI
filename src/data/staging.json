@@ -46,9 +46,9 @@
   ],
   "urls": [
     {
-      "id": "staging-google-home",
-      "name": "Staging Google Home Page",
-      "url": "https://www.google.com",
+      "id": "staging-example-home",
+      "name": "Staging Example Home Page",
+      "url": "https://example.com",
       "environment": "staging",
       "expectedStatus": 200,
       "timeout": 30000
@@ -57,9 +57,9 @@
   "environments": [
     {
       "name": "staging",
-      "baseUrl": "https://www.google.com",
+      "baseUrl": "https://example.com",
       "apiUrl": "https://jsonplaceholder.typicode.com",
-      "features": ["search", "images"],
+      "features": ["basic"],
       "credentials": {
         "username": "staging_user",
         "password": "staging_pass"

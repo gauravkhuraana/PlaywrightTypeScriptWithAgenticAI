@@ -82,7 +82,7 @@ jobs:
           npx playwright test --project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ strategy.job-total }}
         fi
       env:
-        BASE_URL: https://www.google.com
+        BASE_URL: https://example.com
         API_BASE_URL: https://jsonplaceholder.typicode.com
         TEST_ENV: ci
         DEBUG: pw:api*

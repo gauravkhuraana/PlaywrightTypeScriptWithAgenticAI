@@ -135,33 +135,17 @@
   ],
   "urls": [
     {
-      "id": "google-home",
-      "name": "Google Home Page",
-      "url": "https://www.google.com",
+      "id": "example-home",
+      "name": "Example Home Page",
+      "url": "https://example.com",
       "environment": "prod",
       "expectedStatus": 200,
       "timeout": 30000
     },
     {
-      "id": "google-search-results",
-      "name": "Google Search Results",
-      "url": "https://www.google.com/search?q=test",
-      "environment": "prod",
-      "expectedStatus": 200,
-      "timeout": 30000
-    },
-    {
-      "id": "google-images",
-      "name": "Google Images",
-      "url": "https://www.google.com/imghp",
-      "environment": "prod",
-      "expectedStatus": 200,
-      "timeout": 30000
-    },
-    {
-      "id": "google-maps",
-      "name": "Google Maps",
-      "url": "https://www.google.com/maps",
+      "id": "automation-practice",
+      "name": "Automation Practice Site",
+      "url": "https://the-internet.herokuapp.com",
       "environment": "prod",
       "expectedStatus": 200,
       "timeout": 30000
@@ -170,9 +154,9 @@
   "environments": [
     {
       "name": "staging",
-      "baseUrl": "https://www.google.com",
+      "baseUrl": "https://example.com",
       "apiUrl": "https://jsonplaceholder.typicode.com",
-      "features": ["search", "images", "maps"],
+      "features": ["basic"],
       "credentials": {
         "username": "staging_user",
         "password": "staging_pass"
@@ -180,9 +164,9 @@
     },
     {
       "name": "prod",
-      "baseUrl": "https://www.google.com",
+      "baseUrl": "https://example.com",
       "apiUrl": "https://jsonplaceholder.typicode.com",
-      "features": ["search", "images", "maps", "news", "shopping"],
+      "features": ["basic"],
       "credentials": {
         "username": "prod_user",
         "password": "prod_pass"

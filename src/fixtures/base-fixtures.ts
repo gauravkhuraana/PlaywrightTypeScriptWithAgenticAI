@@ -18,10 +18,20 @@ export const test = base.extend<TestOptions & {
   videoHelper: VideoHelper;
   performanceHelper: PerformanceHelper;
   accessibilityHelper: AccessibilityHelper;
-  
-  // Custom page fixtures
-  googlePage: any; // Will be defined in page objects
 }>({
+  // Environment fixture with default value
+  environment: ['dev', { option: true }],
+
+  // API Base URL fixture with default value
+  apiBaseURL: ['https://api.example.com', { option: true }],
+
+  // API Config fixture with default value
+  apiConfig: [{
+    timeout: 30000,
+    retries: 3,
+    headers: {}
+  }, { option: true }],
+
   // Test data manager fixture
   testDataManager: async ({ environment }, use) => {
     const testDataManager = new TestDataManager(environment);
