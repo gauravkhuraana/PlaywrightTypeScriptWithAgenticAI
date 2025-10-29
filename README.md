@@ -365,6 +365,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Allure](https://docs.qameta.io/allure/) - Test reporting framework
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 
+## 📚 Documentation
+
+- **[Symbol Definitions Guide](SYMBOL_DEFINITIONS.md)** - Learn how types, interfaces, classes, and other symbols are defined in this repository
+- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Overview of completed features and framework components
+- **[Allure Fix Summary](ALLURE_FIX_SUMMARY.md)** - Allure reporting configuration and troubleshooting
+
 ## 📞 Support
 
 - 💬 Slack: #test-automation
