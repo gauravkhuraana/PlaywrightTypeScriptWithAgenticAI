@@ -17,7 +17,9 @@ export class ScreenshotHelper {
     this.testInfo = testInfo;
     this.logger = new Logger('ScreenshotHelper');
     this.screenshotDir = path.join('test-results', 'screenshots');
+    this.logger.info(`Initializing ScreenshotHelper for test: ${testInfo.title}`);
     this.ensureDirectoryExists();
+    this.logger.debug(`Screenshot directory: ${this.screenshotDir}`);
   }
 
   /**
@@ -25,7 +27,11 @@ export class ScreenshotHelper {
    */
   private ensureDirectoryExists(): void {
     if (!fs.existsSync(this.screenshotDir)) {
+      this.logger.debug(`Creating screenshot directory: ${this.screenshotDir}`);
       fs.mkdirSync(this.screenshotDir, { recursive: true });
+      this.logger.success(`Screenshot directory created: ${this.screenshotDir}`);
+    } else {
+      this.logger.debug(`Screenshot directory already exists: ${this.screenshotDir}`);
     }
   }
 
@@ -36,16 +42,22 @@ export class ScreenshotHelper {
     const screenshotName = name || `fullpage-${Date.now()}`;
     const fileName = this.generateFileName(screenshotName);
     
-    this.logger.info(`Taking full page screenshot: ${fileName}`);
+    this.logger.info(`Taking full page screenshot: ${screenshotName}`);
+    this.logger.debug(`Screenshot path: ${fileName}`);
     
-    await this.page.screenshot({
-      path: fileName,
-      fullPage: true,
-      type: 'png'
-    });
+    try {
+      await this.page.screenshot({
+        path: fileName,
+        fullPage: true,
+        type: 'png'
+      });
 
-    this.logger.success(`Full page screenshot saved: ${fileName}`);
-    return fileName;
+      this.logger.success(`Full page screenshot saved: ${fileName}`);
+      return fileName;
+    } catch (error) {
+      this.logger.error(`Failed to take full page screenshot: ${error}`);
+      throw error;
+    }
   }
 
   /**
@@ -55,16 +67,22 @@ export class ScreenshotHelper {
     const screenshotName = name || `viewport-${Date.now()}`;
     const fileName = this.generateFileName(screenshotName);
     
-    this.logger.info(`Taking viewport screenshot: ${fileName}`);
+    this.logger.info(`Taking viewport screenshot: ${screenshotName}`);
+    this.logger.debug(`Screenshot path: ${fileName}`);
     
-    await this.page.screenshot({
-      path: fileName,
-      fullPage: false,
-      type: 'png'
-    });
+    try {
+      await this.page.screenshot({
+        path: fileName,
+        fullPage: false,
+        type: 'png'
+      });
 
-    this.logger.success(`Viewport screenshot saved: ${fileName}`);
-    return fileName;
+      this.logger.success(`Viewport screenshot saved: ${fileName}`);
+      return fileName;
+    } catch (error) {
+      this.logger.error(`Failed to take viewport screenshot: ${error}`);
+      throw error;
+    }
   }
 
   /**
@@ -75,15 +93,21 @@ export class ScreenshotHelper {
     const fileName = this.generateFileName(screenshotName);
     
     this.logger.info(`Taking element screenshot for selector: ${selector}`);
+    this.logger.debug(`Screenshot path: ${fileName}`);
     
-    const element = this.page.locator(selector);
-    await element.screenshot({
-      path: fileName,
-      type: 'png'
-    });
+    try {
+      const element = this.page.locator(selector);
+      await element.screenshot({
+        path: fileName,
+        type: 'png'
+      });
 
-    this.logger.success(`Element screenshot saved: ${fileName}`);
-    return fileName;
+      this.logger.success(`Element screenshot saved: ${fileName}`);
+      return fileName;
+    } catch (error) {
+      this.logger.error(`Failed to take element screenshot for selector '${selector}': ${error}`);
+      throw error;
+    }
   }
 
   /**
@@ -93,22 +117,28 @@ export class ScreenshotHelper {
     const testName = this.testInfo.title.replace(/[^a-zA-Z0-9]/g, '_');
     const fileName = this.generateFileName(`failure-${testName}`);
     
-    this.logger.info(`Taking failure screenshot: ${fileName}`);
+    this.logger.warn(`Taking failure screenshot for test: ${this.testInfo.title}`);
+    this.logger.debug(`Failure screenshot path: ${fileName}`);
     
-    await this.page.screenshot({
-      path: fileName,
-      fullPage: true,
-      type: 'png'
-    });
+    try {
+      await this.page.screenshot({
+        path: fileName,
+        fullPage: true,
+        type: 'png'
+      });
 
-    // Attach to test report
-    await this.testInfo.attach('failure-screenshot', {
-      path: fileName,
-      contentType: 'image/png'
-    });
+      // Attach to test report
+      await this.testInfo.attach('failure-screenshot', {
+        path: fileName,
+        contentType: 'image/png'
+      });
 
-    this.logger.success(`Failure screenshot saved and attached: ${fileName}`);
-    return fileName;
+      this.logger.success(`Failure screenshot saved and attached: ${fileName}`);
+      return fileName;
+    } catch (error) {
+      this.logger.error(`Failed to take failure screenshot: ${error}`);
+      throw error;
+    }
   }
 
   /**
