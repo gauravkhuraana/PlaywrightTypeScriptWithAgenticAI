@@ -1,0 +1,256 @@
+# Azure DevOps Pipeline for Playwright Test Automation
+# Supports multi-browser, multi-environment, parallel execution with reporting
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    exclude:
+      - '*.md'
+      - docs/
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+schedules:
+  - cron: '0 2 * * *'
+    displayName: 'Nightly Test Run'
+    branches:
+      include:
+        - main
+    always: true
+
+parameters:
+  - name: testSuite
+    displayName: 'Test Suite'
+    type: string
+    default: 'all'
+    values:
+      - all
+      - smoke
+      - regression
+      - api
+      - visual
+      - accessibility
+      - performance
+
+  - name: browser
+    displayName: 'Browser'
+    type: string
+    default: 'all'
+    values:
+      - all
+      - chromium
+      - firefox
+      - webkit
+
+  - name: environment
+    displayName: 'Environment'
+    type: string
+    default: 'staging'
+    values:
+      - dev
+      - staging
+      - production
+
+variables:
+  nodeVersion: '18.x'
+  npm_config_cache: $(Pipeline.Workspace)/.npm
+
+stages:
+  # ──────────────────────────────────────────────
+  # Stage 1: Install & Validate
+  # ──────────────────────────────────────────────
+  - stage: Setup
+    displayName: 'Setup & Validate'
+    jobs:
+      - job: Install
+        displayName: 'Install Dependencies'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Use Node.js $(nodeVersion)'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - task: Cache@2
+            displayName: 'Cache npm packages'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: $(npm_config_cache)
+
+          - script: npm ci
+            displayName: 'Install dependencies'
+
+          - script: npx playwright install --with-deps
+            displayName: 'Install Playwright browsers'
+
+          - script: npm run type-check
+            displayName: 'TypeScript type check'
+            continueOnError: true
+
+  # ──────────────────────────────────────────────
+  # Stage 2: Test Execution
+  # ──────────────────────────────────────────────
+  - stage: Test
+    displayName: 'Run Tests'
+    dependsOn: Setup
+    jobs:
+      - job: Test
+        displayName: 'Playwright Tests'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          matrix:
+            ${{ if or(eq(parameters.browser, 'all'), eq(parameters.browser, 'chromium')) }}:
+              Chromium_Shard1:
+                project: 'chromium'
+                shard: '1/2'
+              Chromium_Shard2:
+                project: 'chromium'
+                shard: '2/2'
+            ${{ if or(eq(parameters.browser, 'all'), eq(parameters.browser, 'firefox')) }}:
+              Firefox_Shard1:
+                project: 'firefox'
+                shard: '1/2'
+              Firefox_Shard2:
+                project: 'firefox'
+                shard: '2/2'
+            ${{ if or(eq(parameters.browser, 'all'), eq(parameters.browser, 'webkit')) }}:
+              WebKit_Shard1:
+                project: 'webkit'
+                shard: '1/2'
+              WebKit_Shard2:
+                project: 'webkit'
+                shard: '2/2'
+          maxParallel: 6
+
+        steps:
+          - task: NodeTool@0
+            displayName: 'Use Node.js $(nodeVersion)'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - task: Cache@2
+            displayName: 'Cache npm packages'
+            inputs:
+              key: 'npm | "$(Agent.OS)" | package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: $(npm_config_cache)
+
+          - script: npm ci
+            displayName: 'Install dependencies'
+
+          - script: npx playwright install --with-deps
+            displayName: 'Install Playwright browsers'
+
+          - script: |
+              if [ "${{ parameters.testSuite }}" = "smoke" ]; then
+                npx playwright test --grep "@smoke" --project="$(project)" --shard=$(shard)
+              elif [ "${{ parameters.testSuite }}" = "regression" ]; then
+                npx playwright test --grep "@regression" --project="$(project)" --shard=$(shard)
+              elif [ "${{ parameters.testSuite }}" = "api" ]; then
+                npx playwright test tests/api --project="$(project)" --shard=$(shard)
+              elif [ "${{ parameters.testSuite }}" = "visual" ]; then
+                npx playwright test tests/visual --project="$(project)" --shard=$(shard)
+              elif [ "${{ parameters.testSuite }}" = "accessibility" ]; then
+                npx playwright test tests/accessibility --project="$(project)" --shard=$(shard)
+              elif [ "${{ parameters.testSuite }}" = "performance" ]; then
+                npx playwright test tests/performance --project="$(project)" --shard=$(shard)
+              else
+                npx playwright test --project="$(project)" --shard=$(shard)
+              fi
+            displayName: 'Run Playwright tests'
+            continueOnError: true
+            env:
+              CI: 'true'
+              BASE_URL: $(BASE_URL)
+              API_BASE_URL: $(API_BASE_URL)
+              TEST_ENV: ${{ parameters.environment }}
+
+          - task: PublishTestResults@2
+            displayName: 'Publish JUnit results'
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'test-results/junit.xml'
+              mergeTestResults: true
+              testRunTitle: 'Playwright - $(project) - $(shard)'
+
+          - publish: playwright-report
+            displayName: 'Upload Playwright report'
+            condition: always()
+            artifact: 'playwright-report-$(project)-$(System.JobPositionInPhase)'
+
+          - publish: test-results
+            displayName: 'Upload test results'
+            condition: always()
+            artifact: 'test-results-$(project)-$(System.JobPositionInPhase)'
+
+          - publish: allure-results
+            displayName: 'Upload Allure results'
+            condition: always()
+            artifact: 'allure-results-$(project)-$(System.JobPositionInPhase)'
+
+  # ──────────────────────────────────────────────
+  # Stage 3: Reporting
+  # ──────────────────────────────────────────────
+  - stage: Report
+    displayName: 'Merge & Publish Reports'
+    dependsOn: Test
+    condition: always()
+    jobs:
+      - job: MergeReports
+        displayName: 'Merge Reports'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Use Node.js $(nodeVersion)'
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: npm ci
+            displayName: 'Install dependencies'
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download all artifacts'
+            inputs:
+              buildType: 'current'
+              targetPath: '$(Pipeline.Workspace)/artifacts'
+
+          - script: |
+              mkdir -p combined-allure-results
+              find $(Pipeline.Workspace)/artifacts -type f -name "*.json" | grep -E "(result|container)" | xargs -I {} cp {} combined-allure-results/ 2>/dev/null || true
+              find $(Pipeline.Workspace)/artifacts -type f -name "*.png" | xargs -I {} cp {} combined-allure-results/ 2>/dev/null || true
+              find $(Pipeline.Workspace)/artifacts -type f -name "*.txt" | xargs -I {} cp {} combined-allure-results/ 2>/dev/null || true
+
+              if [ "$(ls -A combined-allure-results 2>/dev/null)" ]; then
+                npm install -g allure-commandline@2.24.0
+                allure generate combined-allure-results --clean -o allure-report || echo "Allure generation failed"
+              fi
+            displayName: 'Generate Allure report'
+            continueOnError: true
+
+          - publish: allure-report
+            displayName: 'Publish Allure report'
+            condition: always()
+            artifact: 'allure-report'
+
+          - script: |
+              echo "## Test Results Summary" > $(Pipeline.Workspace)/summary.md
+              echo "- **Pipeline**: $(Build.BuildNumber)" >> $(Pipeline.Workspace)/summary.md
+              echo "- **Branch**: $(Build.SourceBranchName)" >> $(Pipeline.Workspace)/summary.md
+              echo "- **Environment**: ${{ parameters.environment }}" >> $(Pipeline.Workspace)/summary.md
+              echo "- **Browser**: ${{ parameters.browser }}" >> $(Pipeline.Workspace)/summary.md
+              echo "- **Suite**: ${{ parameters.testSuite }}" >> $(Pipeline.Workspace)/summary.md
+            displayName: 'Generate summary'

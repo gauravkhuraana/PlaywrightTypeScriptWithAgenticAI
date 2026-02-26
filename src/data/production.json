@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "id": "prod_user",
+      "username": "produser",
+      "email": "prod@example.com",
+      "password": "prod_readonly",
+      "role": "user",
+      "profile": {
+        "firstName": "Prod",
+        "lastName": "User",
+        "dateOfBirth": "1990-01-01",
+        "address": {
+          "street": "1 Prod Ave",
+          "city": "Production City",
+          "state": "Prod",
+          "country": "Prod Country",
+          "zipCode": "99999"
+        },
+        "preferences": {
+          "language": "en",
+          "theme": "light",
+          "notifications": true,
+          "newsletter": false
+        }
+      }
+    }
+  ],
+  "searchQueries": [
+    {
+      "id": "prod-search-1",
+      "query": "production smoke",
+      "expectedResults": 10,
+      "category": "valid",
+      "description": "Production smoke search test",
+      "expectedBehavior": "pass"
+    }
+  ],
+  "urls": [
+    {
+      "id": "prod-home",
+      "name": "Production Home Page",
+      "url": "https://example.com",
+      "environment": "production",
+      "expectedStatus": 200,
+      "timeout": 30000
+    }
+  ],
+  "environments": [
+    {
+      "name": "production",
+      "baseUrl": "https://example.com",
+      "apiUrl": "https://jsonplaceholder.typicode.com",
+      "features": ["basic"],
+      "credentials": {
+        "username": "prod_user",
+        "password": "prod_pass"
+      }
+    }
+  ]
+}

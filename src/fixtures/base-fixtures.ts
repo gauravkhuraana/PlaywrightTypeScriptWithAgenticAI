@@ -7,6 +7,7 @@ import { ScreenshotHelper } from '../utils/screenshot-helper';
 import { VideoHelper } from '../utils/video-helper';
 import { PerformanceHelper } from '../utils/performance-helper';
 import { AccessibilityHelper } from '../utils/accessibility-helper';
+import { FileHelper } from '../utils/file-helper';
 
 // Extend the base test with custom fixtures
 export const test = base.extend<TestOptions & {
@@ -18,6 +19,7 @@ export const test = base.extend<TestOptions & {
   videoHelper: VideoHelper;
   performanceHelper: PerformanceHelper;
   accessibilityHelper: AccessibilityHelper;
+  fileHelper: FileHelper;
 }>({
   // Environment fixture with default value
   environment: ['dev', { option: true }],
@@ -76,6 +78,12 @@ export const test = base.extend<TestOptions & {
   accessibilityHelper: async ({ page }, use) => {
     const accessibilityHelper = new AccessibilityHelper(page);
     await use(accessibilityHelper);
+  },
+
+  // File helper fixture
+  fileHelper: async ({ page }, use) => {
+    const fileHelper = new FileHelper(page);
+    await use(fileHelper);
   },
 
   // Browser configuration fixture

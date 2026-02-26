@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "id": "dev_user",
+      "username": "devuser",
+      "email": "dev@localhost",
+      "password": "dev123",
+      "role": "admin",
+      "profile": {
+        "firstName": "Dev",
+        "lastName": "User",
+        "dateOfBirth": "1990-01-01",
+        "address": {
+          "street": "1 Dev Lane",
+          "city": "Localhost",
+          "state": "Dev",
+          "country": "Local",
+          "zipCode": "00000"
+        },
+        "preferences": {
+          "language": "en",
+          "theme": "dark",
+          "notifications": false,
+          "newsletter": false
+        }
+      }
+    }
+  ],
+  "searchQueries": [
+    {
+      "id": "dev-search-1",
+      "query": "dev test",
+      "expectedResults": 5,
+      "category": "valid",
+      "description": "Dev environment search test",
+      "expectedBehavior": "pass"
+    }
+  ],
+  "urls": [
+    {
+      "id": "dev-home",
+      "name": "Dev Home Page",
+      "url": "http://localhost:3000",
+      "environment": "dev",
+      "expectedStatus": 200,
+      "timeout": 10000
+    }
+  ],
+  "environments": [
+    {
+      "name": "dev",
+      "baseUrl": "http://localhost:3000",
+      "apiUrl": "http://localhost:3001/api",
+      "features": ["search", "images", "debug"],
+      "credentials": {
+        "username": "dev_user",
+        "password": "dev_pass"
+      }
+    }
+  ]
+}

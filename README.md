@@ -1,376 +1,491 @@
-# 🧪 Playwright TypeScript Test Automation Framework
+# Playwright TypeScript Test Automation Framework
 
-A modern, scalable, and modular test automation framework built with Playwright and TypeScript, featuring comprehensive testing capabilities including UI, API, visual regression, accessibility, and performance testing.
+Enterprise-grade, scalable test automation framework built with **Playwright** and **TypeScript**.  
+Covers UI, API, visual-regression, accessibility and performance testing out of the box.
 
 [![Playwright Tests](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/actions/workflows/playwright-tests.yml/badge.svg)](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/actions/workflows/playwright-tests.yml)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Playwright](https://img.shields.io/badge/Playwright-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/)
 
-## 🌟 Features
+---
 
-### Core Capabilities
-- **Cross-Browser Testing**: Chromium, Firefox, WebKit support
-- **Multiple Test Types**: UI, API, Visual Regression, Accessibility, Performance
-- **Page Object Model**: Scalable and maintainable test architecture
-- **Dependency Injection**: Custom fixtures for clean test organization
-- **Parallel Execution**: Fast test execution with built-in parallelization
-- **Comprehensive Reporting**: HTML, Allure, JUnit XML, Custom CSV/JSON reports
+## Table of Contents
 
-### Advanced Features
-- **Visual Regression Testing**: Automated screenshot comparison with configurable thresholds
-- **Accessibility Testing**: WCAG compliance validation with detailed reporting
-- **Performance Testing**: Core Web Vitals monitoring and performance benchmarking
-- **API Testing**: Full HTTP client with response validation and performance tracking
-- **Mobile Testing**: Device emulation and responsive testing
-- **Video Recording**: Test execution recording for debugging
-- **Screenshot Capture**: Automated screenshot capture on failures
+1. [Features](#features)
+2. [Quick Start](#quick-start)
+3. [Project Structure](#project-structure)
+4. [Running Tests](#running-tests)
+5. [Parallelism & Sharding](#parallelism--sharding)
+6. [Multi-Browser Testing](#multi-browser-testing)
+7. [Multi-Environment Support](#multi-environment-support)
+8. [Test Data Handling](#test-data-handling)
+9. [File Handling](#file-handling)
+10. [Reporting](#reporting)
+11. [CI/CD Pipelines](#cicd-pipelines)
+12. [Docker](#docker)
+13. [Framework Architecture](#framework-architecture)
+14. [Configuration Reference](#configuration-reference)
+15. [Contributing](#contributing)
 
-### DevOps & CI/CD
-- **Docker Support**: Containerized test execution
-- **GitHub Actions**: Automated CI/CD pipeline with matrix strategy
-- **Report Publishing**: Automatic report deployment to GitHub Pages
-- **Notifications**: Slack and Teams integration
-- **Security Scanning**: Vulnerability scanning with Trivy
-- **Environment Management**: Multi-environment configuration support
+---
 
-## 🚀 Quick Start
+## Features
+
+| Category | Capability |
+|---|---|
+| **Browsers** | Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari, Tablet |
+| **Test Types** | UI · API · Visual Regression · Accessibility · Performance |
+| **Architecture** | Page Object Model · Custom Fixtures · Dependency Injection |
+| **Parallelism** | Fully parallel execution · CI sharding across agents |
+| **Environments** | dev · staging · production — switchable via `TEST_ENV` |
+| **Test Data** | JSON / YAML / API sourced · per-environment data files |
+| **File Handling** | Download verification · Upload helpers · CSV/JSON readers |
+| **Reporting** | HTML · Allure · JUnit XML · Custom JSON/CSV/HTML · Metrics |
+| **CI/CD** | GitHub Actions · **Azure DevOps Pipelines** |
+| **Containers** | Docker & Docker Compose with report serving |
+| **Notifications** | Slack · Microsoft Teams · Email |
+| **Security** | Trivy scanning · npm audit · non-root containers |
+| **Code Quality** | TypeScript strict mode · ESLint · Prettier · Husky hooks |
+
+---
+
+## Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Git
 
-### Installation
+- **Node.js** ≥ 18
+- **npm** (ships with Node)
+- **Git**
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI.git
-   cd PlaywrightTypeScriptWithAgenticAI
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Install Playwright browsers**
-   ```bash
-   npx playwright install
-   ```
-
-4. **Run sample tests**
-   ```bash
-   npm run test
-   ```
-
-## 📁 Project Structure
-
-```
-PlaywrightTypeScriptWithAgenticAI/
-├── .github/workflows/          # GitHub Actions CI/CD
-├── src/
-│   ├── fixtures/              # Custom test fixtures
-│   ├── pages/                 # Page Object Model classes
-│   ├── types/                 # TypeScript type definitions
-│   ├── utils/                 # Utility classes and helpers
-│   └── reporters/             # Custom test reporters
-├── tests/
-│   ├── accessibility/         # Accessibility tests
-│   ├── api/                   # API integration tests
-│   ├── performance/           # Performance tests
-│   ├── ui/                    # UI/functional tests
-│   └── visual/                # Visual regression tests
-├── test-data/                 # Test data files
-├── docker-compose.yml         # Docker configuration
-├── Dockerfile                 # Container definition
-├── playwright.config.ts       # Playwright configuration
-└── package.json              # Dependencies and scripts
-```
-
-## 🎯 Usage Examples
-
-### Running Tests
+### Install & Run
 
 ```bash
-# Run all tests
-npm run test
+# 1. Clone
+git clone https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI.git
+cd PlaywrightTypeScriptWithAgenticAI
 
-# Run specific test suite
-npm run test:smoke
-npm run test:regression
+# 2. Install dependencies
+npm install
+
+# 3. Install browsers
+npx playwright install --with-deps
+
+# 4. Copy environment config (edit as needed)
+cp .env.example .env
+
+# 5. Run all tests
+npm test
+```
+
+---
+
+## Project Structure
+
+```
+├── .github/workflows/           # GitHub Actions pipeline
+├── azure-pipelines.yml          # Azure DevOps pipeline
+├── src/
+│   ├── data/                    # Test data (per-environment JSON)
+│   │   ├── default.json
+│   │   ├── dev.json
+│   │   ├── staging.json
+│   │   └── production.json
+│   ├── fixtures/                # Custom Playwright fixtures
+│   │   ├── base-fixtures.ts     # Core fixtures (logger, API, helpers)
+│   │   └── page-fixtures.ts     # Page-object fixtures
+│   ├── pages/                   # Page Object Model classes
+│   │   ├── base-page.ts
+│   │   └── example-page.ts
+│   ├── reporters/               # Custom reporters
+│   │   └── custom-reporter.ts
+│   ├── types/                   # TypeScript interfaces
+│   │   ├── test-data.ts
+│   │   └── test-options.ts
+│   └── utils/                   # Utility classes
+│       ├── accessibility-helper.ts
+│       ├── api-client.ts
+│       ├── file-helper.ts       # Download/upload/file operations
+│       ├── logger.ts
+│       ├── performance-helper.ts
+│       ├── screenshot-helper.ts
+│       ├── test-data-manager.ts
+│       └── video-helper.ts
+├── tests/
+│   ├── api/                     # API integration tests
+│   ├── demo/                    # Demo / sample tests
+│   └── page-object/             # POM-based UI tests
+├── playwright.config.ts         # Playwright configuration
+├── global-setup.ts              # Runs once before all tests
+├── global-teardown.ts           # Runs once after all tests
+├── docker-compose.yml
+├── Dockerfile
+├── .env.example                 # Environment variable template
+└── package.json
+```
+
+---
+
+## Running Tests
+
+```bash
+# All tests
+npm test
+
+# By browser
+npm run test:chromium
+npm run test:firefox
+npm run test:webkit
+npm run test:mobile
+
+# By type
 npm run test:api
+npm run test:ui
 npm run test:visual
 npm run test:accessibility
 npm run test:performance
 
-# Run tests in specific browser
-npm run test:chromium
-npm run test:firefox
-npm run test:webkit
-
-# Run tests in headed mode
-npm run test:headed
-
-# Run tests with debug
-npm run test:debug
-```
-
-### Test Categories by Tags
-
-```bash
-# Smoke tests
+# By tag
 npx playwright test --grep "@smoke"
-
-# Regression tests  
 npx playwright test --grep "@regression"
 
-# API tests
-npx playwright test --grep "@api"
-
-# Visual tests
-npx playwright test --grep "@visual"
-
-# Accessibility tests
-npx playwright test --grep "@accessibility"
-
-# Performance tests
-npx playwright test --grep "@performance"
+# Interactive / debug
+npm run test:headed        # Visible browser
+npm run test:debug         # Step-through debugger
+npm run test:ui-mode       # Playwright UI mode
+npx playwright codegen     # Code generator
 ```
 
-### Generate Reports
+---
+
+## Parallelism & Sharding
+
+The framework is configured for maximum parallel execution:
+
+| Setting | Value | Where |
+|---|---|---|
+| `fullyParallel` | `true` | `playwright.config.ts` — runs tests in each file in parallel |
+| `workers` | auto (CPU count) locally, `1` on CI | `playwright.config.ts` |
+| CI sharding | 4 shards × 3 browsers = 12 parallel jobs | GitHub Actions / Azure DevOps |
+
+### Run with sharding locally
 
 ```bash
-# Generate HTML report
-npm run report
+# Split into 4 shards, run shard 1
+npx playwright test --shard=1/4
 
-# Generate Allure report
-npm run allure:generate
-npm run allure:serve
-
-# Test Allure configuration
-npm run allure:test
-
-# Open last HTML report
-npm run report:open
+# Run only chromium, shard 2 of 4
+npx playwright test --project=chromium --shard=2/4
 ```
 
-### Troubleshooting Allure Reports
+### CI Matrix Strategy
 
-If you see "No Allure test results available" in your CI/CD pipeline:
+Both GitHub Actions and Azure DevOps pipelines use a **browser × shard** matrix so tests run across multiple agents simultaneously, dramatically reducing wall-clock time.
 
-1. **Local Verification**: Run `npm run allure:test` to verify Allure works locally
-2. **Check Results**: Ensure `allure-results/` directory contains `.json` files after test runs
-3. **Validate Configuration**: Verify `playwright.config.ts` includes the `allure-playwright` reporter
-4. **CI Debugging**: The GitHub Actions workflow includes debug steps to show artifact structure
+---
 
-Common fixes:
-- Ensure tests are actually running in CI (check test execution logs)
-- Verify `allure-playwright` package is installed
-- Check that Allure results are being uploaded as artifacts correctly
-- Ensure the merge-reports job properly combines results from multiple shards
+## Multi-Browser Testing
 
-## 🏗️ Framework Architecture
+Configured projects in `playwright.config.ts`:
+
+| Project | Device / Engine |
+|---|---|
+| `chromium` | Desktop Chrome |
+| `firefox` | Desktop Firefox |
+| `webkit` | Desktop Safari |
+| `mobile-chrome` | Pixel 5 emulation |
+| `mobile-safari` | iPhone 12 emulation |
+| `tablet` | iPad Pro emulation |
+| `api` | Headless (API-only tests) |
+| `visual-chromium` | Chrome for screenshot comparison |
+
+```bash
+# Run a specific project
+npx playwright test --project=firefox
+
+# Run multiple projects
+npx playwright test --project=chromium --project=firefox
+```
+
+---
+
+## Multi-Environment Support
+
+Switch environments with the `TEST_ENV` variable. Each environment loads its own test data file from `src/data/`.
+
+```bash
+# Run against staging (default)
+npm test
+
+# Run against dev
+TEST_ENV=dev npm test
+
+# Run against production
+TEST_ENV=production BASE_URL=https://prod.example.com npm test
+```
+
+### Environment data files
+
+| File | Purpose |
+|---|---|
+| `src/data/default.json` | Fallback data used when env-specific file is absent |
+| `src/data/dev.json` | Dev environment users, URLs, credentials |
+| `src/data/staging.json` | Staging environment data |
+| `src/data/production.json` | Production (read-only / smoke) data |
+
+Configuration is loaded automatically by `TestDataManager` based on `TEST_ENV`.
+
+---
+
+## Test Data Handling
+
+### Data Manager
+
+The `TestDataManager` class loads environment-specific JSON, with fallback to `default.json`:
+
+```typescript
+test('query search data', async ({ testDataManager }) => {
+  const queries = testDataManager.getSearchQueriesByCategory('valid');
+  const user = testDataManager.getUsersByRole('admin')[0];
+  // ...
+});
+```
+
+### Supported data sources
+
+| Source | How to use |
+|---|---|
+| JSON files | Place in `src/data/`, auto-loaded by env name |
+| YAML files | `testDataManager.loadFromYaml('path/to/data.yaml')` |
+| API endpoint | `testDataManager.loadFromApi('https://api/data')` |
+
+### Type safety
+
+All test data is strongly typed via interfaces in `src/types/test-data.ts`: `User`, `SearchQuery`, `UrlData`, `Environment`, etc.
+
+---
+
+## File Handling
+
+The `FileHelper` fixture provides download/upload support:
+
+```typescript
+test('download and verify report', async ({ page, fileHelper }) => {
+  // Wait for download triggered by a click
+  const filePath = await fileHelper.waitForDownload(() => page.click('#export'));
+  expect(fileHelper.verifyDownload(filePath, 1024)).toBe(true);
+});
+
+test('upload a document', async ({ fileHelper }) => {
+  await fileHelper.uploadFile('input[type="file"]', 'src/data/uploads/doc.pdf');
+});
+
+test('read CSV test data', async ({ fileHelper }) => {
+  const rows = fileHelper.readCsv('src/data/test-cases.csv');
+});
+```
+
+---
+
+## Reporting
+
+### Built-in reporters (configured in `playwright.config.ts`)
+
+| Reporter | Output | Open |
+|---|---|---|
+| **HTML** | `playwright-report/` | `npm run test:report` |
+| **Allure** | `allure-results/` → `allure-report/` | `npm run allure:serve` |
+| **JUnit XML** | `test-results/junit.xml` | CI integration |
+| **JSON** | `test-results/results.json` | Programmatic access |
+| **Custom** | `test-results/custom-reports/` | JSON, HTML, CSV, metrics |
+
+### Custom reporter features
+
+- Per-test pass/fail/skip/timeout tracking
+- Success rate and duration metrics
+- Slowest / fastest test identification
+- Per-project breakdown
+- Slack / Teams / Email notifications (via env vars)
+
+```bash
+# Generate and open HTML report
+npm run test:report
+
+# Generate and serve Allure report
+npm run allure:generate
+npm run allure:serve
+```
+
+---
+
+## CI/CD Pipelines
+
+### GitHub Actions (`.github/workflows/playwright-tests.yml`)
+
+- **Triggers**: push, PR, schedule (daily 2 AM UTC), manual dispatch
+- **Matrix**: 3 browsers × 4 shards = 12 parallel jobs
+- **Reports**: Merged HTML + Allure deployed to GitHub Pages
+- **Notifications**: Slack & Teams webhooks
+- **Security**: Trivy + npm audit
+
+### Azure DevOps (`azure-pipelines.yml`)
+
+- **Triggers**: push, PR, nightly schedule
+- **Parameters**: test suite, browser, environment (selectable at queue time)
+- **Matrix**: 3 browsers × 2 shards = 6 parallel jobs (configurable)
+- **Stages**: Setup → Test → Report
+- **Reports**: JUnit published to Azure Test Plans, Allure as pipeline artifact
+
+#### Azure DevOps setup
+
+1. Create a new pipeline pointing to `azure-pipelines.yml`
+2. Add pipeline variables:
+   - `BASE_URL` — target application URL
+   - `API_BASE_URL` — API endpoint
+3. Optionally add variable groups for secrets
+
+---
+
+## Docker
+
+```bash
+# Build and run all tests
+docker-compose up --build
+
+# Run specific suite
+docker-compose run playwright-tests npm run test:api
+
+# Run with tag filter
+docker-compose run playwright-tests npx playwright test --grep "@smoke"
+```
+
+Reports are served at:
+- Playwright HTML: `http://localhost:8080/playwright`
+- Allure: `http://localhost:5050`
+
+---
+
+## Framework Architecture
 
 ### Page Object Model
-```typescript
-// Example: Example.com Page (automation-friendly test site)
-export class ExamplePage extends BasePage {
-  private readonly pageHeading: Locator;
-  private readonly pageDescription: Locator;
-  private readonly moreInfoLink: Locator;
 
-  constructor(page: Page, logger?: Logger) {
-    super(page, logger || new Logger('ExamplePage'), 'https://example.com');
-    this.pageHeading = page.locator('h1');
-    this.pageDescription = page.locator('p');
-    this.moreInfoLink = page.locator('a[href*="iana.org"]');
+Every page extends `BasePage`, which provides common helpers (wait, click with retry, fill with retry, screenshot, navigation):
+
+```typescript
+export class LoginPage extends BasePage {
+  private readonly usernameInput = this.page.locator('#username');
+  private readonly passwordInput = this.page.locator('#password');
+  private readonly submitButton  = this.page.locator('button[type="submit"]');
+
+  async goto(): Promise<void> {
+    await this.page.goto('/login');
   }
 
-  async validatePageStructure(): Promise<boolean> {
-    const heading = await this.getHeading();
-    const description = await this.getDescription();
-    return heading.includes('Example Domain') && description.length > 0;
+  async waitForPageLoad(): Promise<void> {
+    await this.usernameInput.waitFor({ state: 'visible' });
+  }
+
+  async login(username: string, password: string): Promise<void> {
+    await this.fillInput(this.usernameInput, username);
+    await this.fillInput(this.passwordInput, password);
+    await this.clickElement(this.submitButton);
   }
 }
 ```
 
 ### Custom Fixtures
+
+Fixtures provide auto-initialized, auto-cleaned dependencies to every test:
+
 ```typescript
-// Example: Using custom fixtures with automation-friendly sites
-test('should validate example page with fixtures', async ({ 
-  examplePage, 
-  logger, 
-  testDataManager 
+test('full-stack test', async ({
+  page,
+  examplePage,         // Page object
+  apiClient,           // HTTP client
+  testDataManager,     // Test data
+  logger,              // Structured logger
+  screenshotHelper,    // Screenshots
+  performanceHelper,   // Core Web Vitals
+  accessibilityHelper, // WCAG checks
+  fileHelper           // File operations
 }) => {
-  await examplePage.goto();
-  await examplePage.waitForPageLoad();
-  
-  const isValid = await examplePage.hasExpectedContent();
-  expect(isValid).toBe(true);
-  
-  logger.info('Example page validation completed');
+  // Everything is ready to use — no manual setup or teardown
 });
 ```
 
 ### Utility Classes
-- **Logger**: Structured logging with multiple output formats
-- **ApiClient**: HTTP client with response validation and metrics
-- **ScreenshotHelper**: Advanced screenshot management
-- **VideoHelper**: Video recording and processing
-- **PerformanceHelper**: Performance metrics collection
-- **AccessibilityHelper**: WCAG compliance validation
-- **TestDataManager**: Test data management with JSON/YAML support
 
-## 🐳 Docker Usage
-
-### Run tests in Docker
-```bash
-# Build and run tests
-docker-compose up --build
-
-# Run specific test suite
-docker-compose run playwright-tests npm run test:smoke
-
-# Run with custom command
-docker-compose run playwright-tests npx playwright test --grep "@api"
-```
-
-### View reports
-```bash
-# Access reports at:
-# Playwright reports: http://localhost:8080/playwright
-# Allure reports: http://localhost:5050
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-```bash
-# Core configuration - using automation-friendly sites
-BASE_URL=https://example.com
-API_BASE_URL=https://httpbin.org
-TEST_ENV=staging
-CI=true
-
-# Feature toggles
-DEBUG=pw:api*
-LOG_TO_FILE=true
-ENABLE_NOTIFICATIONS=true
-START_SERVER=false
-
-# Notification webhooks
-SLACK_WEBHOOK_URL=your-slack-webhook
-TEAMS_WEBHOOK_URL=your-teams-webhook
-EMAIL_ENABLED=true
-```
-
-### Playwright Configuration
-The framework supports multiple projects and environments:
-- **Cross-browser testing**: Chromium, Firefox, WebKit
-- **Mobile testing**: iPhone, Android device emulation
-- **API testing**: Dedicated API test project
-- **Visual testing**: Screenshot comparison project
-
-## 📊 Test Reporting
-
-### HTML Reports
-- Interactive test results with filtering
-- Screenshots and videos for failed tests
-- Performance metrics and timing data
-- Test retry information
-
-### Allure Reports
-- Comprehensive test analytics
-- Historical trend analysis
-- Test categorization and tagging
-- Rich attachments and screenshots
-
-### Custom Reports
-- CSV export for test metrics
-- JSON reports for CI/CD integration
-- Performance benchmarking reports
-- Accessibility compliance reports
-
-## 🚦 CI/CD Pipeline
-
-The framework includes a comprehensive GitHub Actions pipeline:
-
-### Features
-- **Matrix Testing**: Parallel execution across browsers and shards
-- **Report Merging**: Consolidated reports from multiple shards
-- **Artifact Management**: Automatic report archiving
-- **GitHub Pages**: Automatic report publishing
-- **Notifications**: Slack and Teams integration
-- **Security Scanning**: Vulnerability assessment
-- **Environment Support**: Multiple deployment environments
-
-### Workflow Triggers
-- Push to main/develop branches
-- Pull request creation
-- Scheduled runs (daily at 2 AM UTC)
-- Manual workflow dispatch with parameters
-
-## 🔒 Security & Best Practices
-
-### Security Features
-- Container security scanning with Trivy
-- npm audit integration
-- Secrets management for sensitive data
-- Non-root container execution
-
-### Code Quality
-- TypeScript strict mode
-- ESLint configuration
-- Prettier code formatting
-- Husky git hooks
-- Dependency vulnerability scanning
-
-## 🛠️ Development
-
-### Adding New Tests
-1. Create test files in appropriate directory (`tests/ui/`, `tests/api/`, etc.)
-2. Use custom fixtures for dependency injection
-3. Follow Page Object Model patterns
-4. Add appropriate test tags (`@smoke`, `@regression`, etc.)
-5. Include allure annotations for reporting
-
-### Adding New Page Objects
-1. Extend `BasePage` class
-2. Define locators in constructor
-3. Implement page-specific methods
-4. Add to fixtures for dependency injection
-
-### Adding New Utilities
-1. Create utility class in `src/utils/`
-2. Add to base fixtures
-3. Include proper TypeScript types
-4. Add comprehensive error handling
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Playwright](https://playwright.dev/) - Modern web testing framework
-- [Allure](https://docs.qameta.io/allure/) - Test reporting framework
-- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
-
-## 📞 Support
-
-- 💬 Slack: #test-automation
-- 🐛 Issues: [GitHub Issues](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/issues)
-- 📖 Wiki: [Documentation](https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI/wiki)
+| Class | Purpose |
+|---|---|
+| `Logger` | Structured console + file logging with levels |
+| `ApiClient` | HTTP verbs, response validation, auth, schema checks |
+| `TestDataManager` | Load JSON/YAML/API data, query by role/category |
+| `FileHelper` | Download/upload, CSV/JSON read/write, temp files |
+| `ScreenshotHelper` | Full-page, element, mobile-responsive, annotated screenshots |
+| `VideoHelper` | Recording, failure capture, cleanup |
+| `PerformanceHelper` | Core Web Vitals, resource timing, memory, JS/CSS metrics |
+| `AccessibilityHelper` | axe-core scan, keyboard nav, contrast, headings, ARIA |
 
 ---
 
-**Built with ❤️ for the testing community**
+## Configuration Reference
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and adjust:
+
+| Variable | Default | Description |
+|---|---|---|
+| `BASE_URL` | `https://example.com` | Application under test |
+| `API_BASE_URL` | `https://httpbin.org` | API endpoint |
+| `TEST_ENV` | `staging` | Environment name (`dev` / `staging` / `production`) |
+| `CI` | `false` | Set `true` in CI pipelines |
+| `DEBUG` | — | Playwright debug logs (e.g. `pw:api*`) |
+| `LOG_TO_FILE` | `false` | Persist logs to `test-results/logs/` |
+| `HEADED` | `false` | Show browser window |
+| `SLOW_MO` | `0` | Slow down actions (ms) |
+| `ENABLE_NOTIFICATIONS` | `false` | Send Slack/Teams/Email on completion |
+| `SLACK_WEBHOOK_URL` | — | Slack incoming webhook |
+| `TEAMS_WEBHOOK_URL` | — | Teams incoming webhook |
+| `START_SERVER` | `false` | Start local dev server before tests |
+
+### npm Scripts
+
+| Script | Description |
+|---|---|
+| `npm test` | Run all tests |
+| `npm run test:chromium` | Chromium only |
+| `npm run test:firefox` | Firefox only |
+| `npm run test:webkit` | WebKit only |
+| `npm run test:mobile` | Mobile Chrome |
+| `npm run test:api` | API tests |
+| `npm run test:headed` | Headed mode |
+| `npm run test:debug` | Debug mode |
+| `npm run test:ui-mode` | Playwright UI |
+| `npm run test:report` | Open HTML report |
+| `npm run allure:generate` | Generate Allure report |
+| `npm run allure:serve` | Serve Allure report |
+| `npm run codegen` | Playwright code generator |
+| `npm run lint` | ESLint check |
+| `npm run lint:fix` | ESLint auto-fix |
+| `npm run format` | Prettier format |
+| `npm run type-check` | TypeScript type check |
+| `npm run clean` | Remove all generated output |
+| `npm run docker:build` | Build Docker image |
+| `npm run docker:run` | Run tests in Docker |
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Follow Page Object Model patterns for UI tests
+4. Add test tags (`@smoke`, `@regression`, etc.)
+5. Ensure `npm run lint` and `npm run type-check` pass
+6. Submit a pull request
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
