@@ -365,6 +365,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Allure](https://docs.qameta.io/allure/) - Test reporting framework
 - [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 
+## 📚 Documentation
+
+Additional documentation is available in the [`docs/`](docs/) folder:
+
+| Document | Description |
+|----------|-------------|
+| [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md) | Full feature implementation overview |
+| [Allure Fix Summary](docs/ALLURE_FIX_SUMMARY.md) | Resolving Allure report issues in CI/CD |
+| [GitHub Actions Fix](docs/GITHUB_ACTIONS_FIX.md) | GitHub Actions workflow fix details |
+| [GitHub Pages Setup](docs/GITHUB_PAGES_SETUP.md) | Setting up GitHub Pages for reports |
+| [Site Migration Summary](docs/SITE_MIGRATION_SUMMARY.md) | Migration from Google.com to automation-friendly sites |
+| [Enhanced Search Tests Summary](docs/ENHANCED_SEARCH_TESTS_SUMMARY.md) | Advanced search test suite implementation |
+
 ## 📞 Support
 
 - 💬 Slack: #test-automation
