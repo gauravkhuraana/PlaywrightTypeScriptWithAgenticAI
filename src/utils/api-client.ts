@@ -1,6 +1,6 @@
-import { APIRequestContext, APIResponse, request } from '@playwright/test';
+import { request, type APIRequestContext, type APIResponse } from '@playwright/test';
 import { Logger } from './logger';
-import { ApiResponse } from '../types/test-data';
+import type { ApiResponse } from '../types/test-data';
 
 /**
  * API Client for making HTTP requests and testing APIs
@@ -8,7 +8,6 @@ import { ApiResponse } from '../types/test-data';
 export class ApiClient {
   private readonly baseUrl: string;
   private readonly timeout: number;
-  private readonly retries: number;
   private readonly headers: Record<string, string>;
   private readonly logger: Logger;
   private apiContext: APIRequestContext | null = null;
@@ -23,7 +22,6 @@ export class ApiClient {
   ) {
     this.baseUrl = baseUrl;
     this.timeout = config?.timeout || 30000;
-    this.retries = config?.retries || 3;
     this.headers = config?.headers || {};
     this.logger = new Logger('ApiClient');
   }
@@ -36,7 +34,7 @@ export class ApiClient {
     this.apiContext = await request.newContext({
       baseURL: this.baseUrl,
       extraHTTPHeaders: this.headers,
-      timeout: this.timeout
+      timeout: this.timeout,
     });
   }
 
@@ -69,7 +67,7 @@ export class ApiClient {
       const response = await context.get(endpoint, {
         ...(options?.params && { params: options.params }),
         ...(options?.headers && { headers: options.headers }),
-        timeout: options?.timeout || this.timeout
+        timeout: options?.timeout || this.timeout,
       });
 
       const result = await this.processResponse<T>(response, startTime);
@@ -99,8 +97,8 @@ export class ApiClient {
       const context = await this.getContext();
       const response = await context.post(endpoint, {
         data,
-        headers: options?.headers,
-        timeout: options?.timeout || this.timeout
+        ...(options?.headers && { headers: options.headers }),
+        timeout: options?.timeout || this.timeout,
       });
 
       const result = await this.processResponse<T>(response, startTime);
@@ -130,8 +128,8 @@ export class ApiClient {
       const context = await this.getContext();
       const response = await context.put(endpoint, {
         data,
-        headers: options?.headers,
-        timeout: options?.timeout || this.timeout
+        ...(options?.headers && { headers: options.headers }),
+        timeout: options?.timeout || this.timeout,
       });
 
       const result = await this.processResponse<T>(response, startTime);
@@ -159,8 +157,8 @@ export class ApiClient {
     try {
       const context = await this.getContext();
       const response = await context.delete(endpoint, {
-        headers: options?.headers,
-        timeout: options?.timeout || this.timeout
+        ...(options?.headers && { headers: options.headers }),
+        timeout: options?.timeout || this.timeout,
       });
 
       const result = await this.processResponse<T>(response, startTime);
@@ -190,8 +188,8 @@ export class ApiClient {
       const context = await this.getContext();
       const response = await context.patch(endpoint, {
         data,
-        headers: options?.headers,
-        timeout: options?.timeout || this.timeout
+        ...(options?.headers && { headers: options.headers }),
+        timeout: options?.timeout || this.timeout,
       });
 
       const result = await this.processResponse<T>(response, startTime);
@@ -206,7 +204,10 @@ export class ApiClient {
   /**
    * Process API response
    */
-  private async processResponse<T>(response: APIResponse, startTime: number): Promise<ApiResponse<T>> {
+  private async processResponse<T>(
+    response: APIResponse,
+    startTime: number
+  ): Promise<ApiResponse<T>> {
     const responseTime = Date.now() - startTime;
     const status = response.status();
     const statusText = response.statusText();
@@ -218,7 +219,7 @@ export class ApiClient {
       if (contentType.includes('application/json')) {
         data = await response.json();
       } else {
-        data = await response.text() as any;
+        data = (await response.text()) as any;
       }
     } catch {
       data = null as any;
@@ -229,7 +230,7 @@ export class ApiClient {
       statusText,
       headers,
       data,
-      responseTime
+      responseTime,
     };
   }
 
@@ -239,13 +240,13 @@ export class ApiClient {
   validateStatus(response: ApiResponse, expectedStatus: number | number[]): boolean {
     const expected = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
     const isValid = expected.includes(response.status);
-    
+
     if (isValid) {
       this.logger.success(`Status validation passed: ${response.status}`);
     } else {
       this.logger.error(`Status validation failed. Expected: ${expected}, Got: ${response.status}`);
     }
-    
+
     return isValid;
   }
 
@@ -254,13 +255,17 @@ export class ApiClient {
    */
   validateResponseTime(response: ApiResponse, maxTime: number): boolean {
     const isValid = response.responseTime <= maxTime;
-    
+
     if (isValid) {
-      this.logger.success(`Response time validation passed: ${response.responseTime}ms <= ${maxTime}ms`);
+      this.logger.success(
+        `Response time validation passed: ${response.responseTime}ms <= ${maxTime}ms`
+      );
     } else {
-      this.logger.error(`Response time validation failed: ${response.responseTime}ms > ${maxTime}ms`);
+      this.logger.error(
+        `Response time validation failed: ${response.responseTime}ms > ${maxTime}ms`
+      );
     }
-    
+
     return isValid;
   }
 
@@ -324,7 +329,7 @@ export class ApiClient {
     try {
       const keys = path.split('.');
       let value = response.data;
-      
+
       for (const key of keys) {
         if (value && typeof value === 'object' && key in value) {
           value = value[key];
@@ -332,7 +337,7 @@ export class ApiClient {
           return null;
         }
       }
-      
+
       return value;
     } catch (error) {
       this.logger.error(`Failed to extract value from path '${path}':`, error);

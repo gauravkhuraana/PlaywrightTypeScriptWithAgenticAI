@@ -1,4 +1,4 @@
-import { TestData } from '../types/test-data';
+import type { TestData } from '../types/test-data';
 import { Logger } from './logger';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -33,7 +33,7 @@ export class TestDataManager {
       const dataDir = path.join(process.cwd(), 'src', 'data');
       const envDataFile = path.join(dataDir, `${this.environment}.json`);
       const defaultDataFile = path.join(dataDir, 'default.json');
-      
+
       let dataFile = defaultDataFile;
       if (fs.existsSync(envDataFile)) {
         dataFile = envDataFile;
@@ -74,16 +74,16 @@ export class TestDataManager {
               city: 'Test City',
               state: 'Test State',
               country: 'Test Country',
-              zipCode: '12345'
+              zipCode: '12345',
             },
             preferences: {
               language: 'en',
               theme: 'light',
               notifications: true,
-              newsletter: false
-            }
-          }
-        }
+              newsletter: false,
+            },
+          },
+        },
       ],
       searchQueries: [
         {
@@ -92,7 +92,7 @@ export class TestDataManager {
           expectedResults: 10,
           category: 'valid',
           description: 'Valid search for playwright testing',
-          expectedBehavior: 'pass'
+          expectedBehavior: 'pass',
         },
         {
           id: 'valid-search-2',
@@ -100,7 +100,7 @@ export class TestDataManager {
           expectedResults: 10,
           category: 'valid',
           description: 'Valid search for typescript automation',
-          expectedBehavior: 'pass'
+          expectedBehavior: 'pass',
         },
         {
           id: 'special-chars-search',
@@ -108,7 +108,7 @@ export class TestDataManager {
           expectedResults: 5,
           category: 'edge-case',
           description: 'Search with special characters',
-          expectedBehavior: 'pass'
+          expectedBehavior: 'pass',
         },
         {
           id: 'long-query-search',
@@ -116,7 +116,7 @@ export class TestDataManager {
           expectedResults: 0,
           category: 'edge-case',
           description: 'Extremely long search query',
-          expectedBehavior: 'fail'
+          expectedBehavior: 'fail',
         },
         {
           id: 'pagination-test',
@@ -124,8 +124,8 @@ export class TestDataManager {
           expectedResults: 10,
           category: 'performance',
           description: 'Search result pagination test that should fail',
-          expectedBehavior: 'fail'
-        }
+          expectedBehavior: 'fail',
+        },
       ],
       urls: [
         {
@@ -134,8 +134,8 @@ export class TestDataManager {
           url: 'https://example.com',
           environment: 'prod',
           expectedStatus: 200,
-          timeout: 30000
-        }
+          timeout: 30000,
+        },
       ],
       environments: [
         {
@@ -145,8 +145,8 @@ export class TestDataManager {
           features: ['basic'],
           credentials: {
             username: 'staging_user',
-            password: 'staging_pass'
-          }
+            password: 'staging_pass',
+          },
         },
         {
           name: 'prod',
@@ -155,10 +155,10 @@ export class TestDataManager {
           features: ['basic'],
           credentials: {
             username: 'prod_user',
-            password: 'prod_pass'
-          }
-        }
-      ]
+            password: 'prod_pass',
+          },
+        },
+      ],
     };
   }
 
@@ -173,14 +173,14 @@ export class TestDataManager {
    * Get user by ID
    */
   getUserById(id: string) {
-    return this.testData?.users.find(user => user.id === id);
+    return this.testData?.users.find((user) => user.id === id);
   }
 
   /**
    * Get user by role
    */
   getUsersByRole(role: 'admin' | 'user' | 'guest') {
-    return this.testData?.users.filter(user => user.role === role) || [];
+    return this.testData?.users.filter((user) => user.role === role) || [];
   }
 
   /**
@@ -194,21 +194,23 @@ export class TestDataManager {
    * Get search query by ID
    */
   getSearchQueryById(id: string) {
-    return this.testData?.searchQueries.find(query => query.id === id);
+    return this.testData?.searchQueries.find((query) => query.id === id);
   }
 
   /**
    * Get search queries by category
    */
   getSearchQueriesByCategory(category: 'valid' | 'invalid' | 'edge-case' | 'performance') {
-    return this.testData?.searchQueries.filter(query => query.category === category) || [];
+    return this.testData?.searchQueries.filter((query) => query.category === category) || [];
   }
 
   /**
    * Get search queries by expected behavior
    */
   getSearchQueriesByBehavior(behavior: 'pass' | 'fail') {
-    return this.testData?.searchQueries.filter(query => query.expectedBehavior === behavior) || [];
+    return (
+      this.testData?.searchQueries.filter((query) => query.expectedBehavior === behavior) || []
+    );
   }
 
   /**
@@ -222,14 +224,14 @@ export class TestDataManager {
    * Get URL by ID
    */
   getUrlById(id: string) {
-    return this.testData?.urls.find(url => url.id === id);
+    return this.testData?.urls.find((url) => url.id === id);
   }
 
   /**
    * Get environment configuration
    */
   getEnvironment(name: string) {
-    return this.testData?.environments.find(env => env.name === name);
+    return this.testData?.environments.find((env) => env.name === name);
   }
 
   /**

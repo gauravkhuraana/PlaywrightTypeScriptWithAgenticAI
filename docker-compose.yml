@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   playwright-tests:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: playwright-tests
@@ -27,7 +27,7 @@ services:
       - CHECK_RESULTS_EVERY_SECONDS=5
       - KEEP_HISTORY=TRUE
     ports:
-      - "5050:5050"
+      - '5050:5050'
     volumes:
       - ./allure-results:/app/allure-results
       - ./allure-reports:/app/default-reports
@@ -41,7 +41,7 @@ services:
     image: nginx:alpine
     container_name: report-server
     ports:
-      - "8080:80"
+      - '8080:80'
     volumes:
       - ./playwright-report:/usr/share/nginx/html/playwright
       - ./allure-reports:/usr/share/nginx/html/allure

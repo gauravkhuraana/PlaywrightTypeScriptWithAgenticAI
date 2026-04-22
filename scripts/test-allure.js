@@ -18,9 +18,9 @@ if (!fs.existsSync(allureResultsPath)) {
 }
 
 // Count result files
-const resultFiles = fs.readdirSync(allureResultsPath).filter(file => 
-  file.endsWith('-result.json') || file.endsWith('-container.json')
-);
+const resultFiles = fs
+  .readdirSync(allureResultsPath)
+  .filter((file) => file.endsWith('-result.json') || file.endsWith('-container.json'));
 
 console.log(`📁 Found ${resultFiles.length} Allure result files`);
 

@@ -9,6 +9,7 @@ A modern, scalable, and modular test automation framework built with Playwright 
 ## 🌟 Features
 
 ### Core Capabilities
+
 - **Cross-Browser Testing**: Chromium, Firefox, WebKit support
 - **Multiple Test Types**: UI, API, Visual Regression, Accessibility, Performance
 - **Page Object Model**: Scalable and maintainable test architecture
@@ -17,6 +18,7 @@ A modern, scalable, and modular test automation framework built with Playwright 
 - **Comprehensive Reporting**: HTML, Allure, JUnit XML, Custom CSV/JSON reports
 
 ### Advanced Features
+
 - **Visual Regression Testing**: Automated screenshot comparison with configurable thresholds
 - **Accessibility Testing**: WCAG compliance validation with detailed reporting
 - **Performance Testing**: Core Web Vitals monitoring and performance benchmarking
@@ -26,6 +28,7 @@ A modern, scalable, and modular test automation framework built with Playwright 
 - **Screenshot Capture**: Automated screenshot capture on failures
 
 ### DevOps & CI/CD
+
 - **Docker Support**: Containerized test execution
 - **GitHub Actions**: Automated CI/CD pipeline with matrix strategy
 - **Report Publishing**: Automatic report deployment to GitHub Pages
@@ -36,24 +39,28 @@ A modern, scalable, and modular test automation framework built with Playwright 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 - Git
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI.git
    cd PlaywrightTypeScriptWithAgenticAI
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Install Playwright browsers**
+
    ```bash
    npx playwright install
    ```
@@ -121,7 +128,7 @@ npm run test:debug
 # Smoke tests
 npx playwright test --grep "@smoke"
 
-# Regression tests  
+# Regression tests
 npx playwright test --grep "@regression"
 
 # API tests
@@ -164,6 +171,7 @@ If you see "No Allure test results available" in your CI/CD pipeline:
 4. **CI Debugging**: The GitHub Actions workflow includes debug steps to show artifact structure
 
 Common fixes:
+
 - Ensure tests are actually running in CI (check test execution logs)
 - Verify `allure-playwright` package is installed
 - Check that Allure results are being uploaded as artifacts correctly
@@ -172,6 +180,7 @@ Common fixes:
 ## 🏗️ Framework Architecture
 
 ### Page Object Model
+
 ```typescript
 // Example: Example.com Page (automation-friendly test site)
 export class ExamplePage extends BasePage {
@@ -195,24 +204,26 @@ export class ExamplePage extends BasePage {
 ```
 
 ### Custom Fixtures
+
 ```typescript
 // Example: Using custom fixtures with automation-friendly sites
-test('should validate example page with fixtures', async ({ 
-  examplePage, 
-  logger, 
-  testDataManager 
+test('should validate example page with fixtures', async ({
+  examplePage,
+  logger,
+  testDataManager,
 }) => {
   await examplePage.goto();
   await examplePage.waitForPageLoad();
-  
+
   const isValid = await examplePage.hasExpectedContent();
   expect(isValid).toBe(true);
-  
+
   logger.info('Example page validation completed');
 });
 ```
 
 ### Utility Classes
+
 - **Logger**: Structured logging with multiple output formats
 - **ApiClient**: HTTP client with response validation and metrics
 - **ScreenshotHelper**: Advanced screenshot management
@@ -224,6 +235,7 @@ test('should validate example page with fixtures', async ({
 ## 🐳 Docker Usage
 
 ### Run tests in Docker
+
 ```bash
 # Build and run tests
 docker-compose up --build
@@ -236,6 +248,7 @@ docker-compose run playwright-tests npx playwright test --grep "@api"
 ```
 
 ### View reports
+
 ```bash
 # Access reports at:
 # Playwright reports: http://localhost:8080/playwright
@@ -245,6 +258,7 @@ docker-compose run playwright-tests npx playwright test --grep "@api"
 ## 🔧 Configuration
 
 ### Environment Variables
+
 ```bash
 # Core configuration - using automation-friendly sites
 BASE_URL=https://example.com
@@ -265,7 +279,9 @@ EMAIL_ENABLED=true
 ```
 
 ### Playwright Configuration
+
 The framework supports multiple projects and environments:
+
 - **Cross-browser testing**: Chromium, Firefox, WebKit
 - **Mobile testing**: iPhone, Android device emulation
 - **API testing**: Dedicated API test project
@@ -274,18 +290,21 @@ The framework supports multiple projects and environments:
 ## 📊 Test Reporting
 
 ### HTML Reports
+
 - Interactive test results with filtering
 - Screenshots and videos for failed tests
 - Performance metrics and timing data
 - Test retry information
 
 ### Allure Reports
+
 - Comprehensive test analytics
 - Historical trend analysis
 - Test categorization and tagging
 - Rich attachments and screenshots
 
 ### Custom Reports
+
 - CSV export for test metrics
 - JSON reports for CI/CD integration
 - Performance benchmarking reports
@@ -296,6 +315,7 @@ The framework supports multiple projects and environments:
 The framework includes a comprehensive GitHub Actions pipeline:
 
 ### Features
+
 - **Matrix Testing**: Parallel execution across browsers and shards
 - **Report Merging**: Consolidated reports from multiple shards
 - **Artifact Management**: Automatic report archiving
@@ -305,6 +325,7 @@ The framework includes a comprehensive GitHub Actions pipeline:
 - **Environment Support**: Multiple deployment environments
 
 ### Workflow Triggers
+
 - Push to main/develop branches
 - Pull request creation
 - Scheduled runs (daily at 2 AM UTC)
@@ -313,21 +334,36 @@ The framework includes a comprehensive GitHub Actions pipeline:
 ## 🔒 Security & Best Practices
 
 ### Security Features
+
 - Container security scanning with Trivy
 - npm audit integration
 - Secrets management for sensitive data
 - Non-root container execution
 
 ### Code Quality
-- TypeScript strict mode
-- ESLint configuration
-- Prettier code formatting
-- Husky git hooks
+
+- TypeScript strict mode (`tsc --noEmit` is part of CI)
+- ESLint with `@typescript-eslint`, `eslint-plugin-playwright`, and Prettier
+- Prettier code formatting (enforced via ESLint and a CI check)
+- Husky `pre-commit` hook running `lint-staged` (ESLint + Prettier on changed files)
 - Dependency vulnerability scanning
+
+Run the quality gates locally before opening a PR:
+
+```bash
+npm run lint         # ESLint (fails the build on any error)
+npm run format       # Prettier: write formatted output
+npm run type-check   # tsc --noEmit
+```
+
+The CI workflow (`.github/workflows/playwright-tests.yml`) executes these
+same commands in a dedicated `lint` job that must pass before the Playwright
+test matrix runs.
 
 ## 🛠️ Development
 
 ### Adding New Tests
+
 1. Create test files in appropriate directory (`tests/ui/`, `tests/api/`, etc.)
 2. Use custom fixtures for dependency injection
 3. Follow Page Object Model patterns
@@ -335,12 +371,14 @@ The framework includes a comprehensive GitHub Actions pipeline:
 5. Include allure annotations for reporting
 
 ### Adding New Page Objects
+
 1. Extend `BasePage` class
 2. Define locators in constructor
 3. Implement page-specific methods
 4. Add to fixtures for dependency injection
 
 ### Adding New Utilities
+
 1. Create utility class in `src/utils/`
 2. Add to base fixtures
 3. Include proper TypeScript types
@@ -369,14 +407,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Additional documentation is available in the [`docs/`](docs/) folder:
 
-| Document | Description |
-|----------|-------------|
-| [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md) | Full feature implementation overview |
-| [Allure Fix Summary](docs/ALLURE_FIX_SUMMARY.md) | Resolving Allure report issues in CI/CD |
-| [GitHub Actions Fix](docs/GITHUB_ACTIONS_FIX.md) | GitHub Actions workflow fix details |
-| [GitHub Pages Setup](docs/GITHUB_PAGES_SETUP.md) | Setting up GitHub Pages for reports |
-| [Site Migration Summary](docs/SITE_MIGRATION_SUMMARY.md) | Migration from Google.com to automation-friendly sites |
-| [Enhanced Search Tests Summary](docs/ENHANCED_SEARCH_TESTS_SUMMARY.md) | Advanced search test suite implementation |
+| Document                                                               | Description                                            |
+| ---------------------------------------------------------------------- | ------------------------------------------------------ |
+| [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)               | Full feature implementation overview                   |
+| [Allure Fix Summary](docs/ALLURE_FIX_SUMMARY.md)                       | Resolving Allure report issues in CI/CD                |
+| [GitHub Actions Fix](docs/GITHUB_ACTIONS_FIX.md)                       | GitHub Actions workflow fix details                    |
+| [GitHub Pages Setup](docs/GITHUB_PAGES_SETUP.md)                       | Setting up GitHub Pages for reports                    |
+| [Site Migration Summary](docs/SITE_MIGRATION_SUMMARY.md)               | Migration from Google.com to automation-friendly sites |
+| [Enhanced Search Tests Summary](docs/ENHANCED_SEARCH_TESTS_SUMMARY.md) | Advanced search test suite implementation              |
 
 ## 📞 Support
 

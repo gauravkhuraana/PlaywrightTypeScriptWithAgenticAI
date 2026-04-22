@@ -9,7 +9,7 @@ export const test = base.extend<{
   examplePage: async ({ page, logger }, use) => {
     const examplePage = new ExamplePage(page, logger);
     await use(examplePage);
-  }
+  },
 });
 
 export { expect } from '@playwright/test';

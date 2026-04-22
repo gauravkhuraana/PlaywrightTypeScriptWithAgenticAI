@@ -1,11 +1,13 @@
 # 🔧 Allure Report Issue Resolution
 
 ## 📋 Issue Description
+
 The "No Allure test results available" message was appearing in CI/CD pipeline even though Allure results were working perfectly locally with 49+ result files.
 
 ## 🎯 Root Cause Analysis
 
 ### Primary Issues Identified:
+
 1. **Artifact Collection**: GitHub Actions workflow failing to properly download and combine Allure results from multiple test shards
 2. **File Type Handling**: Missing logic to handle different Allure attachment types (videos, images, text)
 3. **Error Handling**: Insufficient debugging and fallback mechanisms
@@ -14,6 +16,7 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ## ✅ Comprehensive Fixes Applied
 
 ### 1. Enhanced Artifact Download & Collection
+
 ```yaml
 - name: Download all artifacts
   uses: actions/download-artifact@v4
@@ -32,6 +35,7 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ```
 
 ### 2. Improved Allure Results Merging
+
 ```yaml
 - name: Generate Allure Report
   run: |
@@ -41,12 +45,12 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
     find all-artifacts -type f -name "*.webm" | grep -E "attachment" | xargs -I {} cp {} combined-allure-results/
     find all-artifacts -type f -name "*.png" | grep -E "attachment" | xargs -I {} cp {} combined-allure-results/
     find all-artifacts -type f -name "categories.json" | xargs -I {} cp {} combined-allure-results/
-    
+
     # Enhanced error handling with fallbacks
     if ! command -v allure &> /dev/null; then
       npm install -g allure-commandline@2.24.0
     fi
-    
+
     allure generate allure-results --clean -o allure-report || {
       npm run allure:generate || {
         echo "Allure generation failed - creating fallback report"
@@ -59,6 +63,7 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ## ✅ Fixes Applied
 
 ### 1. Updated package.json
+
 ```json
 {
   "scripts": {
@@ -68,6 +73,7 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ```
 
 ### 2. Enhanced Workflow Logic
+
 ```yaml
 # Robust Allure generation with fallback
 - name: Generate Allure Report
@@ -89,6 +95,7 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ```
 
 ### 3. Smart Pages Deployment
+
 - ✅ **Graceful Fallback**: Creates placeholder if Allure unavailable
 - ✅ **Status Indication**: Shows Allure availability on index page
 - ✅ **Error Recovery**: Workflow continues even if Allure fails
@@ -96,22 +103,25 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ## 🚀 Expected Behavior Now
 
 ### Scenario 1: Allure Works Perfectly
+
 ```
 ✅ Generate Allure Report - Success
-✅ Upload allure-report artifact - Success  
+✅ Upload allure-report artifact - Success
 ✅ Download allure-report - Success
 ✅ Deploy to Pages - Success with full Allure report
 ```
 
 ### Scenario 2: Allure Generation Fails
+
 ```
 ⚠️  Generate Allure Report - Creates placeholder
 ✅ Upload allure-report artifact - Success (placeholder)
-✅ Download allure-report - Success (placeholder)  
+✅ Download allure-report - Success (placeholder)
 ✅ Deploy to Pages - Success with "Allure Unavailable" message
 ```
 
 ### Scenario 3: No Allure Results
+
 ```
 ⚠️  Generate Allure Report - No results to process
 ✅ Upload allure-report artifact - Skipped (no files)
@@ -122,18 +132,22 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ## 🎁 Benefits
 
 ### ✅ **Reliability**
+
 - Workflow never fails due to missing Allure artifacts
 - Always produces a deployable report
 
-### ✅ **Transparency**  
+### ✅ **Transparency**
+
 - Clear logging about Allure availability
 - User-friendly error messages
 
 ### ✅ **Flexibility**
+
 - Works with or without Allure configuration
 - Graceful degradation when Allure unavailable
 
 ### ✅ **User Experience**
+
 - Index page shows real-time status
 - Clear indication when reports are unavailable
 
@@ -142,17 +156,16 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 ### If Allure Still Not Working:
 
 1. **Check Dependencies**:
+
    ```bash
    npm install allure-commandline allure-playwright
    ```
 
 2. **Verify Playwright Config**:
+
    ```js
    // playwright.config.ts
-   reporter: [
-     ['html'],
-     ['allure-playwright']
-   ]
+   reporter: [['html'], ['allure-playwright']];
    ```
 
 3. **Check Test Results**:
@@ -166,11 +179,11 @@ The "No Allure test results available" message was appearing in CI/CD pipeline e
 
 ## 📊 Impact Summary
 
-| Before Fix | After Fix |
-|------------|-----------|
+| Before Fix                            | After Fix                             |
+| ------------------------------------- | ------------------------------------- |
 | ❌ Workflow fails on missing artifact | ✅ Graceful fallback with placeholder |
-| ❌ No error context | ✅ Clear status messages |
-| ❌ All-or-nothing deployment | ✅ Partial deployment with warnings |
-| ❌ Manual intervention required | ✅ Self-healing workflow |
+| ❌ No error context                   | ✅ Clear status messages              |
+| ❌ All-or-nothing deployment          | ✅ Partial deployment with warnings   |
+| ❌ Manual intervention required       | ✅ Self-healing workflow              |
 
 Your GitHub Actions workflow is now robust and will handle Allure report issues gracefully! 🎉

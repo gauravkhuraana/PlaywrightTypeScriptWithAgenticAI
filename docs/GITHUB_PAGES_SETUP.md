@@ -1,13 +1,15 @@
 # 🚀 GitHub Pages Deployment Setup Guide
 
 ## 📋 Problem
+
 Getting error: "Get Pages site failed. Please verify that the repository has Pages enabled and configured to build using GitHub Actions"
 
 ## ✅ Solutions (Choose One)
 
 ### Option 1: Enable Pages via GitHub Website (Recommended)
 
-1. **Go to your repository**: 
+1. **Go to your repository**:
+
    ```
    https://github.com/gauravkhuraana/PlaywrightTypeScriptWithAgenticAI
    ```
@@ -28,6 +30,7 @@ Getting error: "Get Pages site failed. Please verify that the repository has Pag
 ### Option 2: Workflow Auto-Enablement (Already Applied)
 
 I've updated your workflow file to:
+
 - ✅ Add `enablement: true` parameter to auto-enable Pages
 - ✅ Make deployment conditional (won't fail if Pages unavailable)
 - ✅ Add error handling with `continue-on-error: true`
@@ -45,10 +48,12 @@ If you don't need GitHub Pages for reports, you can disable the deployment:
 ## 🎯 What the Workflow Does Now
 
 ### Before Fix:
+
 - ❌ Failed if Pages not enabled
 - ❌ Blocked entire workflow execution
 
 ### After Fix:
+
 - ✅ Auto-enables Pages if possible
 - ✅ Gracefully skips deployment if Pages unavailable
 - ✅ Tests continue to run regardless of Pages status
@@ -57,16 +62,18 @@ If you don't need GitHub Pages for reports, you can disable the deployment:
 ## 📊 Expected Workflow Behavior
 
 ### If Pages Enabled:
+
 ```
 ✅ Setup Pages - Success
 ✅ Download reports
-✅ Create index page  
+✅ Create index page
 ✅ Upload to Pages
 ✅ Deploy to Pages
 🌐 Reports available at: https://gauravkhuraana.github.io/PlaywrightTypeScriptWithAgenticAI/
 ```
 
 ### If Pages Not Enabled:
+
 ```
 ⚠️  Setup Pages - Skipped (Pages not available)
 ⚠️  Download reports - Skipped
@@ -78,6 +85,7 @@ If you don't need GitHub Pages for reports, you can disable the deployment:
 ## 🔧 Repository Permissions Required
 
 Ensure your repository has these permissions:
+
 - **Repository Settings**: Admin access to enable Pages
 - **GitHub Actions**: Enabled in repository settings
 - **Workflow Permissions**: Read and write permissions
@@ -99,6 +107,7 @@ Ensure your repository has these permissions:
 ## 🔗 Alternative Report Access
 
 Even without Pages, you can always access reports:
+
 - **GitHub Actions**: Go to Actions → Click workflow run → Download artifacts
 - **Local Reports**: Run tests locally and open `playwright-report/index.html`
 - **CI Artifacts**: All reports are saved as workflow artifacts
