@@ -38,6 +38,10 @@ env:
   NODE_VERSION: '18'
   CI: true
 
+# Follow the principle of least privilege: jobs only need to read the repo.
+permissions:
+  contents: read
+
 jobs:
   # Quality gate: static analysis must pass before the (expensive) test matrix runs.
   lint:
