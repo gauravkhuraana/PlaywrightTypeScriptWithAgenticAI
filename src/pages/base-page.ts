@@ -1,5 +1,5 @@
-import { Page, Locator } from '@playwright/test';
-import { Logger } from '../utils/logger';
+import type { Page, Locator } from '@playwright/test';
+import type { Logger } from '../utils/logger';
 
 /**
  * Base Page class that all page objects should extend
@@ -66,9 +66,9 @@ export abstract class BasePage {
    */
   async takeScreenshot(name: string): Promise<Buffer> {
     this.logger.info(`Taking screenshot: ${name}`);
-    return await this.page.screenshot({ 
+    return await this.page.screenshot({
       path: `test-results/screenshots/${name}.png`,
-      fullPage: true 
+      fullPage: true,
     });
   }
 
@@ -76,7 +76,7 @@ export abstract class BasePage {
    * Wait for network to be idle
    */
   async waitForNetworkIdle(timeout: number = 30000): Promise<void> {
-    await this.page.waitForLoadState('networkidle', { timeout });
+    await this.page.waitForLoadState('load', { timeout });
   }
 
   /**
@@ -85,14 +85,14 @@ export abstract class BasePage {
   async getAllLinks(): Promise<string[]> {
     const links = await this.page.locator('a[href]').all();
     const hrefs: string[] = [];
-    
+
     for (const link of links) {
       const href = await link.getAttribute('href');
       if (href && !href.startsWith('javascript:') && !href.startsWith('#')) {
         hrefs.push(href);
       }
     }
-    
+
     return hrefs;
   }
 
@@ -102,15 +102,15 @@ export abstract class BasePage {
   async getAllImages(): Promise<{ src: string; alt: string }[]> {
     const images = await this.page.locator('img').all();
     const imageData: { src: string; alt: string }[] = [];
-    
+
     for (const img of images) {
       const src = await img.getAttribute('src');
-      const alt = await img.getAttribute('alt') || '';
+      const alt = (await img.getAttribute('alt')) || '';
       if (src) {
         imageData.push({ src, alt });
       }
     }
-    
+
     return imageData;
   }
 
@@ -143,7 +143,7 @@ export abstract class BasePage {
    */
   async getElementText(locator: Locator): Promise<string> {
     await this.waitForElement(locator);
-    return await locator.textContent() || '';
+    return (await locator.textContent()) || '';
   }
 
   /**

@@ -3,11 +3,9 @@
  */
 export class Logger {
   private readonly context: string;
-  private readonly timestamp: string;
 
   constructor(context: string) {
     this.context = context;
-    this.timestamp = new Date().toISOString();
   }
 
   /**
@@ -35,7 +33,7 @@ export class Logger {
    * Log debug message
    */
   debug(message: string, data?: any): void {
-    if (process.env.DEBUG) {
+    if (process.env['DEBUG']) {
       this.log('DEBUG', message, data);
     }
   }
@@ -60,7 +58,7 @@ export class Logger {
   private log(level: string, message: string, data?: any): void {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] [${level}] [${this.context}] ${message}`;
-    
+
     // Choose appropriate console method based on level
     switch (level) {
       case 'ERROR':
@@ -83,7 +81,7 @@ export class Logger {
     }
 
     // Write to file if enabled
-    if (process.env.LOG_TO_FILE) {
+    if (process.env['LOG_TO_FILE']) {
       this.writeToFile(level, message, data);
     }
   }
@@ -95,21 +93,21 @@ export class Logger {
     try {
       const fs = require('fs');
       const path = require('path');
-      
+
       const logDir = 'test-results/logs';
       if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir, { recursive: true });
       }
-      
+
       const timestamp = new Date().toISOString();
       const logEntry = {
         timestamp,
         level,
         context: this.context,
         message,
-        data
+        data,
       };
-      
+
       const logFile = path.join(logDir, `test-${new Date().toISOString().split('T')[0]}.log`);
       fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
     } catch (error) {

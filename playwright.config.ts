@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
-import { TestOptions } from './src/types/test-options';
+import type { TestOptions } from './src/types/test-options';
+
+const isCI = !!process.env['CI'];
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -7,178 +9,184 @@ import { TestOptions } from './src/types/test-options';
 export default defineConfig<TestOptions>({
   // Test directory
   testDir: './tests',
-  
+
   // Run tests in files in parallel
   fullyParallel: true,
-  
+
   // Fail the build on CI if you accidentally left test.only in the source code
-  forbidOnly: !!process.env.CI,
-  
+  forbidOnly: isCI,
+
   // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
-  
+  retries: isCI ? 2 : 0,
+
   // Opt out of parallel tests on CI
-  workers: process.env.CI ? 1 : undefined,
-  
+  ...(isCI ? { workers: 1 } : {}),
+
   // Global setup and teardown
   globalSetup: require.resolve('./global-setup'),
   globalTeardown: require.resolve('./global-teardown'),
-  
+
   // Reporter configuration
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['json', { outputFile: 'test-results/results.json' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
-    ['allure-playwright', { 
-      outputFolder: 'allure-results',
-      suiteTitle: true,
-      categories: [
-        {
-          name: 'Broken tests',
-          matchedStatuses: ['broken']
-        },
-        {
-          name: 'Failed tests',
-          matchedStatuses: ['failed']
-        }
-      ]
-    }],
-    ['./src/reporters/custom-reporter.ts']
+    [
+      'allure-playwright',
+      {
+        outputFolder: 'allure-results',
+        suiteTitle: true,
+        categories: [
+          {
+            name: 'Broken tests',
+            matchedStatuses: ['broken'],
+          },
+          {
+            name: 'Failed tests',
+            matchedStatuses: ['failed'],
+          },
+        ],
+      },
+    ],
+    ['./src/reporters/custom-reporter.ts'],
   ],
-  
+
   // Shared settings for all projects
   use: {
     // Base URL for all tests
-    baseURL: process.env.BASE_URL || 'https://example.com',
-    
+    baseURL: process.env['BASE_URL'] || 'https://example.com',
+
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
-    
+
     // Record video on failure
     video: 'retain-on-failure',
-    
+
     // Take screenshot on failure
     screenshot: 'only-on-failure',
-    
+
     // Global test timeout
     actionTimeout: 30 * 1000,
     navigationTimeout: 60 * 1000,
-    
+
     // Accept downloads
     acceptDownloads: true,
-    
+
     // Ignore HTTPS errors
     ignoreHTTPSErrors: true,
-    
+
     // Custom test options
-    environment: process.env.TEST_ENV || 'staging',
+    environment: process.env['TEST_ENV'] || 'staging',
     apiBaseURL: process.env['API_BASE_URL'] || 'https://httpbin.org',
-    
+
     // User agent
-    userAgent: 'Playwright Test Automation Framework'
+    userAgent: 'Playwright Test Automation Framework',
   },
-  
+
   // Test output directory
   outputDir: 'test-results',
-  
+
   // Expect configuration
   expect: {
     // Maximum time expect() should wait for the condition to be met
     timeout: 10 * 1000,
-    
+
     // Threshold for screenshot comparison
-    threshold: 0.2,
-    
-    // Mode for screenshot comparison
-    mode: 'default'
+    toHaveScreenshot: {
+      threshold: 0.2,
+    },
   },
-  
+
   // Configure projects for major browsers
   projects: [
     {
       name: 'setup',
       testMatch: '**/global.setup.ts',
-      teardown: 'cleanup'
+      teardown: 'cleanup',
     },
     {
       name: 'cleanup',
-      testMatch: '**/global.teardown.ts'
+      testMatch: '**/global.teardown.ts',
     },
-    
+
     // Desktop browsers
     {
       name: 'chromium',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome'
+        channel: 'chrome',
       },
-      dependencies: ['setup']
+      dependencies: ['setup'],
     },
     {
       name: 'firefox',
-      use: { 
-        ...devices['Desktop Firefox']
+      use: {
+        ...devices['Desktop Firefox'],
       },
-      dependencies: ['setup']
+      dependencies: ['setup'],
     },
     {
       name: 'webkit',
-      use: { 
-        ...devices['Desktop Safari']
+      use: {
+        ...devices['Desktop Safari'],
       },
-      dependencies: ['setup']
+      dependencies: ['setup'],
     },
-    
+
     // Mobile browsers
     {
       name: 'mobile-chrome',
-      use: { 
-        ...devices['Pixel 5']
+      use: {
+        ...devices['Pixel 5'],
       },
-      dependencies: ['setup']
+      dependencies: ['setup'],
     },
     {
       name: 'mobile-safari',
-      use: { 
-        ...devices['iPhone 12']
+      use: {
+        ...devices['iPhone 12'],
       },
-      dependencies: ['setup']
+      dependencies: ['setup'],
     },
-    
+
     // Tablet browsers
     {
       name: 'tablet',
-      use: { 
-        ...devices['iPad Pro']
+      use: {
+        ...devices['iPad Pro'],
       },
-      dependencies: ['setup']
+      dependencies: ['setup'],
     },
-    
+
     // API testing
     {
       name: 'api',
       testMatch: '**/api/**/*.spec.ts',
       use: {
-        baseURL: process.env['API_BASE_URL'] || 'https://httpbin.org'
-      }
+        baseURL: process.env['API_BASE_URL'] || 'https://httpbin.org',
+      },
     },
-    
+
     // Visual regression testing
     {
       name: 'visual-chromium',
       testMatch: '**/visual/**/*.spec.ts',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome'
+        channel: 'chrome',
       },
-      dependencies: ['setup']
-    }
+      dependencies: ['setup'],
+    },
   ],
-  
+
   // Development server configuration
-  webServer: process.env.START_SERVER ? {
-    command: 'npm start',
-    port: 3000,
-    reuseExistingServer: !process.env.CI
-  } : undefined
+  ...(process.env['START_SERVER']
+    ? {
+        webServer: {
+          command: 'npm start',
+          port: 3000,
+          reuseExistingServer: !isCI,
+        },
+      }
+    : {}),
 });

@@ -45,11 +45,5 @@
     "global-setup.ts",
     "global-teardown.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test-results",
-    "playwright-report",
-    "allure-results"
-  ]
+  "exclude": ["node_modules", "dist", "test-results", "playwright-report", "allure-results"]
 }
