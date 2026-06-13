@@ -1,7 +1,12 @@
-import { Reporter, TestCase, TestResult, FullResult } from '@playwright/test/reporter';
-import { Logger } from '../utils/logger';
-import * as fs from 'fs';
-import * as path from 'path';
+import {
+  Reporter,
+  TestCase,
+  TestResult,
+  FullResult,
+} from "@playwright/test/reporter";
+import { Logger } from "../utils/logger";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Custom Playwright Reporter
@@ -22,16 +27,16 @@ export default class CustomReporter implements Reporter {
   }> = [];
 
   constructor() {
-    this.logger = new Logger('CustomReporter');
+    this.logger = new Logger("CustomReporter");
   }
 
   onBegin(config: any, suite: any): void {
     this.startTime = Date.now();
     this.totalTests = suite.allTests().length;
     this.logger.info(`Starting test execution with ${this.totalTests} tests`);
-    
+
     // Ensure report directory exists
-    const reportDir = 'test-results/custom-reports';
+    const reportDir = "test-results/custom-reports";
     if (!fs.existsSync(reportDir)) {
       fs.mkdirSync(reportDir, { recursive: true });
     }
@@ -44,7 +49,7 @@ export default class CustomReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult): void {
     const duration = result.duration;
     const status = result.status;
-    
+
     const resultData: {
       title: string;
       status: string;
@@ -55,7 +60,7 @@ export default class CustomReporter implements Reporter {
       title: test.title,
       status,
       duration,
-      projectName: test.parent.project()?.name || 'unknown'
+      projectName: test.parent.project()?.name || "unknown",
     };
 
     if (result.error?.message) {
@@ -65,19 +70,22 @@ export default class CustomReporter implements Reporter {
     this.results.push(resultData);
 
     switch (status) {
-      case 'passed':
+      case "passed":
         this.passedTests++;
         this.logger.success(`✓ ${test.title} (${duration}ms)`);
         break;
-      case 'failed':
+      case "failed":
         this.failedTests++;
-        this.logger.error(`✗ ${test.title} (${duration}ms)`, result.error?.message);
+        this.logger.error(
+          `✗ ${test.title} (${duration}ms)`,
+          result.error?.message,
+        );
         break;
-      case 'skipped':
+      case "skipped":
         this.skippedTests++;
         this.logger.warn(`- ${test.title} (skipped)`);
         break;
-      case 'timedOut':
+      case "timedOut":
         this.failedTests++;
         this.logger.error(`⏰ ${test.title} (timed out after ${duration}ms)`);
         break;
@@ -86,19 +94,20 @@ export default class CustomReporter implements Reporter {
 
   onEnd(result: FullResult): void {
     const totalDuration = Date.now() - this.startTime;
-    const successRate = this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0;
+    const successRate =
+      this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0;
 
     // Log summary
-    this.logger.info('='.repeat(60));
-    this.logger.info('TEST EXECUTION SUMMARY');
-    this.logger.info('='.repeat(60));
+    this.logger.info("=".repeat(60));
+    this.logger.info("TEST EXECUTION SUMMARY");
+    this.logger.info("=".repeat(60));
     this.logger.info(`Total Tests: ${this.totalTests}`);
     this.logger.success(`Passed: ${this.passedTests}`);
     this.logger.error(`Failed: ${this.failedTests}`);
     this.logger.warn(`Skipped: ${this.skippedTests}`);
     this.logger.info(`Success Rate: ${successRate.toFixed(2)}%`);
     this.logger.info(`Total Duration: ${(totalDuration / 1000).toFixed(2)}s`);
-    this.logger.info('='.repeat(60));
+    this.logger.info("=".repeat(60));
 
     // Generate custom reports
     this.generateJSONReport();
@@ -107,7 +116,7 @@ export default class CustomReporter implements Reporter {
     this.generateMetricsReport();
 
     // Send notifications if configured
-    if (process.env['ENABLE_NOTIFICATIONS'] === 'true') {
+    if (process.env["ENABLE_NOTIFICATIONS"] === "true") {
       this.sendNotifications(result, successRate, totalDuration);
     }
   }
@@ -119,26 +128,28 @@ export default class CustomReporter implements Reporter {
         passed: this.passedTests,
         failed: this.failedTests,
         skipped: this.skippedTests,
-        successRate: this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0,
+        successRate:
+          this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0,
         duration: Date.now() - this.startTime,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       results: this.results,
       environment: {
         nodeVersion: process.version,
         platform: process.platform,
         arch: process.arch,
-        ci: !!process.env['CI']
-      }
+        ci: !!process.env["CI"],
+      },
     };
 
-    const reportPath = path.join('test-results/custom-reports', 'report.json');
+    const reportPath = path.join("test-results/custom-reports", "report.json");
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
     this.logger.info(`JSON report generated: ${reportPath}`);
   }
 
   private generateHTMLReport(): void {
-    const successRate = this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0;
+    const successRate =
+      this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0;
     const duration = Date.now() - this.startTime;
 
     const html = `
@@ -218,66 +229,81 @@ export default class CustomReporter implements Reporter {
                 </tr>
             </thead>
             <tbody>
-                ${this.results.map(result => `
+                ${this.results
+                  .map(
+                    (result) => `
                     <tr>
                         <td>${result.title}</td>
                         <td class="status-${result.status}">${result.status.toUpperCase()}</td>
                         <td>${result.duration}ms</td>
                         <td>${result.projectName}</td>
-                        <td>${result.error || '-'}</td>
+                        <td>${result.error || "-"}</td>
                     </tr>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
             </tbody>
         </table>
     </div>
 </body>
 </html>`;
 
-    const reportPath = path.join('test-results/custom-reports', 'report.html');
+    const reportPath = path.join("test-results/custom-reports", "report.html");
     fs.writeFileSync(reportPath, html);
     this.logger.info(`HTML report generated: ${reportPath}`);
   }
 
   private generateCSVReport(): void {
-    const csvHeaders = 'Test Name,Status,Duration (ms),Project,Error\n';
-    const csvRows = this.results.map(result =>
-      `"${result.title}","${result.status}","${result.duration}","${result.projectName}","${result.error || ''}"`
-    ).join('\n');
+    const csvHeaders = "Test Name,Status,Duration (ms),Project,Error\n";
+    const csvRows = this.results
+      .map(
+        (result) =>
+          `"${result.title}","${result.status}","${result.duration}","${result.projectName}","${result.error || ""}"`,
+      )
+      .join("\n");
 
     const csvContent = csvHeaders + csvRows;
-    const reportPath = path.join('test-results/custom-reports', 'report.csv');
+    const reportPath = path.join("test-results/custom-reports", "report.csv");
     fs.writeFileSync(reportPath, csvContent);
     this.logger.info(`CSV report generated: ${reportPath}`);
   }
 
   private generateMetricsReport(): void {
     const duration = Date.now() - this.startTime;
-    const successRate = this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0;
-    
+    const successRate =
+      this.totalTests > 0 ? (this.passedTests / this.totalTests) * 100 : 0;
+
     // Calculate additional metrics
-    const averageTestDuration = this.results.length > 0 
-      ? this.results.reduce((sum, result) => sum + result.duration, 0) / this.results.length 
-      : 0;
+    const averageTestDuration =
+      this.results.length > 0
+        ? this.results.reduce((sum, result) => sum + result.duration, 0) /
+          this.results.length
+        : 0;
 
-    const slowestTest = this.results.reduce((slowest, result) => 
-      result.duration > slowest.duration ? result : slowest, 
-      { title: 'None', duration: 0 }
+    const slowestTest = this.results.reduce(
+      (slowest, result) =>
+        result.duration > slowest.duration ? result : slowest,
+      { title: "None", duration: 0 },
     );
 
-    const fastestTest = this.results.reduce((fastest, result) => 
-      result.duration < fastest.duration ? result : fastest, 
-      { title: 'None', duration: Infinity }
+    const fastestTest = this.results.reduce(
+      (fastest, result) =>
+        result.duration < fastest.duration ? result : fastest,
+      { title: "None", duration: Infinity },
     );
 
-    const projectStats = this.results.reduce((stats, result) => {
-      if (!stats[result.projectName]) {
-        stats[result.projectName] = { total: 0, passed: 0, failed: 0 };
-      }
-      stats[result.projectName].total++;
-      if (result.status === 'passed') stats[result.projectName].passed++;
-      if (result.status === 'failed') stats[result.projectName].failed++;
-      return stats;
-    }, {} as Record<string, { total: number; passed: number; failed: number }>);
+    const projectStats = this.results.reduce(
+      (stats, result) => {
+        if (!stats[result.projectName]) {
+          stats[result.projectName] = { total: 0, passed: 0, failed: 0 };
+        }
+        stats[result.projectName].total++;
+        if (result.status === "passed") stats[result.projectName].passed++;
+        if (result.status === "failed") stats[result.projectName].failed++;
+        return stats;
+      },
+      {} as Record<string, { total: number; passed: number; failed: number }>,
+    );
 
     const metrics = {
       execution: {
@@ -285,26 +311,31 @@ export default class CustomReporter implements Reporter {
         averageTestDuration: Math.round(averageTestDuration),
         slowestTest: slowestTest.title,
         slowestTestDuration: slowestTest.duration,
-        fastestTest: fastestTest.title !== 'None' ? fastestTest.title : 'None',
-        fastestTestDuration: fastestTest.duration !== Infinity ? fastestTest.duration : 0
+        fastestTest: fastestTest.title !== "None" ? fastestTest.title : "None",
+        fastestTestDuration:
+          fastestTest.duration !== Infinity ? fastestTest.duration : 0,
       },
       summary: {
         total: this.totalTests,
         passed: this.passedTests,
         failed: this.failedTests,
         skipped: this.skippedTests,
-        successRate: Math.round(successRate * 100) / 100
+        successRate: Math.round(successRate * 100) / 100,
       },
       projects: projectStats,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    const reportPath = path.join('test-results/custom-reports', 'metrics.json');
+    const reportPath = path.join("test-results/custom-reports", "metrics.json");
     fs.writeFileSync(reportPath, JSON.stringify(metrics, null, 2));
     this.logger.info(`Metrics report generated: ${reportPath}`);
   }
 
-  private async sendNotifications(result: FullResult, successRate: number, duration: number): void {
+  private async sendNotifications(
+    result: FullResult,
+    successRate: number,
+    duration: number,
+  ): void {
     try {
       const message = `
 🔍 Test Execution Complete!
@@ -317,41 +348,40 @@ export default class CustomReporter implements Reporter {
 • 📈 Success Rate: ${successRate.toFixed(1)}%
 • ⏱️ Duration: ${(duration / 1000).toFixed(1)}s
 
-${this.failedTests > 0 ? '⚠️ Some tests failed. Please check the detailed report.' : '🎉 All tests passed!'}
+${this.failedTests > 0 ? "⚠️ Some tests failed. Please check the detailed report." : "🎉 All tests passed!"}
       `;
 
       // Slack notification
-      if (process.env['SLACK_WEBHOOK_URL']) {
+      if (process.env["SLACK_WEBHOOK_URL"]) {
         await this.sendSlackNotification(message);
       }
 
       // Teams notification
-      if (process.env['TEAMS_WEBHOOK_URL']) {
+      if (process.env["TEAMS_WEBHOOK_URL"]) {
         await this.sendTeamsNotification(message);
       }
 
       // Email notification
-      if (process.env['EMAIL_ENABLED'] === 'true') {
+      if (process.env["EMAIL_ENABLED"] === "true") {
         await this.sendEmailNotification(message);
       }
-
     } catch (error) {
-      this.logger.error('Failed to send notifications:', error);
+      this.logger.error("Failed to send notifications:", error);
     }
   }
 
   private async sendSlackNotification(message: string): Promise<void> {
     // Implementation for Slack webhook
-    this.logger.info('Slack notification would be sent:', message);
+    this.logger.info("Slack notification would be sent:", message);
   }
 
   private async sendTeamsNotification(message: string): Promise<void> {
     // Implementation for Teams webhook
-    this.logger.info('Teams notification would be sent:', message);
+    this.logger.info("Teams notification would be sent:", message);
   }
 
   private async sendEmailNotification(message: string): Promise<void> {
     // Implementation for email notification
-    this.logger.info('Email notification would be sent:', message);
+    this.logger.info("Email notification would be sent:", message);
   }
 }

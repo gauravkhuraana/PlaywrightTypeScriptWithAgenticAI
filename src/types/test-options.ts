@@ -1,40 +1,40 @@
-import { PlaywrightTestOptions } from '@playwright/test';
+import { PlaywrightTestOptions } from "@playwright/test";
 
 export interface TestOptions extends PlaywrightTestOptions {
   /**
    * Test environment (dev, staging, prod)
    */
   environment: string;
-  
+
   /**
    * API base URL for API tests
    */
   apiBaseURL: string;
-  
+
   /**
    * Enable visual testing
    */
   enableVisualTesting?: boolean;
-  
+
   /**
    * Enable accessibility testing
    */
   enableAccessibilityTesting?: boolean;
-  
+
   /**
    * Enable performance testing
    */
   enablePerformanceTesting?: boolean;
-  
+
   /**
    * Test data configuration
    */
   testDataConfig?: {
-    source: 'json' | 'yaml' | 'api';
+    source: "json" | "yaml" | "api";
     path?: string;
     endpoint?: string;
   };
-  
+
   /**
    * Browser configuration
    */
@@ -44,15 +44,15 @@ export interface TestOptions extends PlaywrightTestOptions {
     recordVideo?: boolean;
     recordHar?: boolean;
   };
-  
+
   /**
    * Mobile testing configuration
    */
   mobileConfig?: {
     deviceName: string;
-    orientation: 'portrait' | 'landscape';
+    orientation: "portrait" | "landscape";
   };
-  
+
   /**
    * API testing configuration
    */
@@ -61,7 +61,7 @@ export interface TestOptions extends PlaywrightTestOptions {
     retries: number;
     headers?: Record<string, string>;
   };
-  
+
   /**
    * Database configuration
    */

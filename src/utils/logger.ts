@@ -14,21 +14,21 @@ export class Logger {
    * Log info message
    */
   info(message: string, data?: any): void {
-    this.log('INFO', message, data);
+    this.log("INFO", message, data);
   }
 
   /**
    * Log warning message
    */
   warn(message: string, data?: any): void {
-    this.log('WARN', message, data);
+    this.log("WARN", message, data);
   }
 
   /**
    * Log error message
    */
   error(message: string, error?: any): void {
-    this.log('ERROR', message, error);
+    this.log("ERROR", message, error);
   }
 
   /**
@@ -36,7 +36,7 @@ export class Logger {
    */
   debug(message: string, data?: any): void {
     if (process.env.DEBUG) {
-      this.log('DEBUG', message, data);
+      this.log("DEBUG", message, data);
     }
   }
 
@@ -44,14 +44,14 @@ export class Logger {
    * Log success message
    */
   success(message: string, data?: any): void {
-    this.log('SUCCESS', message, data);
+    this.log("SUCCESS", message, data);
   }
 
   /**
    * Log step message (for test steps)
    */
   step(message: string, data?: any): void {
-    this.log('STEP', message, data);
+    this.log("STEP", message, data);
   }
 
   /**
@@ -60,26 +60,26 @@ export class Logger {
   private log(level: string, message: string, data?: any): void {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] [${level}] [${this.context}] ${message}`;
-    
+
     // Choose appropriate console method based on level
     switch (level) {
-      case 'ERROR':
-        console.error(logMessage, data ? data : '');
+      case "ERROR":
+        console.error(logMessage, data ? data : "");
         break;
-      case 'WARN':
-        console.warn(logMessage, data ? data : '');
+      case "WARN":
+        console.warn(logMessage, data ? data : "");
         break;
-      case 'DEBUG':
-        console.debug(logMessage, data ? data : '');
+      case "DEBUG":
+        console.debug(logMessage, data ? data : "");
         break;
-      case 'SUCCESS':
-        console.log(`✅ ${logMessage}`, data ? data : '');
+      case "SUCCESS":
+        console.log(`✅ ${logMessage}`, data ? data : "");
         break;
-      case 'STEP':
-        console.log(`🔸 ${logMessage}`, data ? data : '');
+      case "STEP":
+        console.log(`🔸 ${logMessage}`, data ? data : "");
         break;
       default:
-        console.log(logMessage, data ? data : '');
+        console.log(logMessage, data ? data : "");
     }
 
     // Write to file if enabled
@@ -93,27 +93,30 @@ export class Logger {
    */
   private writeToFile(level: string, message: string, data?: any): void {
     try {
-      const fs = require('fs');
-      const path = require('path');
-      
-      const logDir = 'test-results/logs';
+      const fs = require("fs");
+      const path = require("path");
+
+      const logDir = "test-results/logs";
       if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir, { recursive: true });
       }
-      
+
       const timestamp = new Date().toISOString();
       const logEntry = {
         timestamp,
         level,
         context: this.context,
         message,
-        data
+        data,
       };
-      
-      const logFile = path.join(logDir, `test-${new Date().toISOString().split('T')[0]}.log`);
-      fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
+
+      const logFile = path.join(
+        logDir,
+        `test-${new Date().toISOString().split("T")[0]}.log`,
+      );
+      fs.appendFileSync(logFile, JSON.stringify(logEntry) + "\n");
     } catch (error) {
-      console.error('Failed to write log to file:', error);
+      console.error("Failed to write log to file:", error);
     }
   }
 

@@ -1,5 +1,5 @@
-import { Page, Locator } from '@playwright/test';
-import { Logger } from '../utils/logger';
+import { Page, Locator } from "@playwright/test";
+import { Logger } from "../utils/logger";
 
 /**
  * Base Page class that all page objects should extend
@@ -13,7 +13,7 @@ export abstract class BasePage {
   constructor(page: Page, logger: Logger, baseUrl?: string) {
     this.page = page;
     this.logger = logger;
-    this.baseUrl = baseUrl || 'https://example.com';
+    this.baseUrl = baseUrl || "https://example.com";
   }
 
   /**
@@ -43,15 +43,21 @@ export abstract class BasePage {
   /**
    * Wait for an element to be visible
    */
-  async waitForElement(locator: Locator, timeout: number = 30000): Promise<void> {
-    await locator.waitFor({ state: 'visible', timeout });
+  async waitForElement(
+    locator: Locator,
+    timeout: number = 30000,
+  ): Promise<void> {
+    await locator.waitFor({ state: "visible", timeout });
   }
 
   /**
    * Wait for an element to be hidden
    */
-  async waitForElementToBeHidden(locator: Locator, timeout: number = 30000): Promise<void> {
-    await locator.waitFor({ state: 'hidden', timeout });
+  async waitForElementToBeHidden(
+    locator: Locator,
+    timeout: number = 30000,
+  ): Promise<void> {
+    await locator.waitFor({ state: "hidden", timeout });
   }
 
   /**
@@ -66,9 +72,9 @@ export abstract class BasePage {
    */
   async takeScreenshot(name: string): Promise<Buffer> {
     this.logger.info(`Taking screenshot: ${name}`);
-    return await this.page.screenshot({ 
+    return await this.page.screenshot({
       path: `test-results/screenshots/${name}.png`,
-      fullPage: true 
+      fullPage: true,
     });
   }
 
@@ -76,23 +82,23 @@ export abstract class BasePage {
    * Wait for network to be idle
    */
   async waitForNetworkIdle(timeout: number = 30000): Promise<void> {
-    await this.page.waitForLoadState('networkidle', { timeout });
+    await this.page.waitForLoadState("networkidle", { timeout });
   }
 
   /**
    * Get all links on the page
    */
   async getAllLinks(): Promise<string[]> {
-    const links = await this.page.locator('a[href]').all();
+    const links = await this.page.locator("a[href]").all();
     const hrefs: string[] = [];
-    
+
     for (const link of links) {
-      const href = await link.getAttribute('href');
-      if (href && !href.startsWith('javascript:') && !href.startsWith('#')) {
+      const href = await link.getAttribute("href");
+      if (href && !href.startsWith("javascript:") && !href.startsWith("#")) {
         hrefs.push(href);
       }
     }
-    
+
     return hrefs;
   }
 
@@ -100,17 +106,17 @@ export abstract class BasePage {
    * Get all images on the page
    */
   async getAllImages(): Promise<{ src: string; alt: string }[]> {
-    const images = await this.page.locator('img').all();
+    const images = await this.page.locator("img").all();
     const imageData: { src: string; alt: string }[] = [];
-    
+
     for (const img of images) {
-      const src = await img.getAttribute('src');
-      const alt = await img.getAttribute('alt') || '';
+      const src = await img.getAttribute("src");
+      const alt = (await img.getAttribute("alt")) || "";
       if (src) {
         imageData.push({ src, alt });
       }
     }
-    
+
     return imageData;
   }
 
@@ -119,7 +125,7 @@ export abstract class BasePage {
    */
   async isElementPresent(locator: Locator): Promise<boolean> {
     try {
-      await locator.waitFor({ state: 'attached', timeout: 5000 });
+      await locator.waitFor({ state: "attached", timeout: 5000 });
       return true;
     } catch {
       return false;
@@ -131,7 +137,7 @@ export abstract class BasePage {
    */
   async isElementVisible(locator: Locator): Promise<boolean> {
     try {
-      await locator.waitFor({ state: 'visible', timeout: 5000 });
+      await locator.waitFor({ state: "visible", timeout: 5000 });
       return true;
     } catch {
       return false;
@@ -143,7 +149,7 @@ export abstract class BasePage {
    */
   async getElementText(locator: Locator): Promise<string> {
     await this.waitForElement(locator);
-    return await locator.textContent() || '';
+    return (await locator.textContent()) || "";
   }
 
   /**
@@ -166,7 +172,11 @@ export abstract class BasePage {
   /**
    * Fill input field with retry
    */
-  async fillInput(locator: Locator, value: string, retries: number = 3): Promise<void> {
+  async fillInput(
+    locator: Locator,
+    value: string,
+    retries: number = 3,
+  ): Promise<void> {
     for (let i = 0; i < retries; i++) {
       try {
         await this.waitForElement(locator);
@@ -192,7 +202,7 @@ export abstract class BasePage {
    * Wait for page navigation
    */
   async waitForNavigation(timeout: number = 30000): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded', { timeout });
+    await this.page.waitForLoadState("domcontentloaded", { timeout });
   }
 
   /**

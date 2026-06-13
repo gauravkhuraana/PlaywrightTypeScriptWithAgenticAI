@@ -10,7 +10,7 @@ export interface User {
   username: string;
   email: string;
   password: string;
-  role: 'admin' | 'user' | 'guest';
+  role: "admin" | "user" | "guest";
   profile: UserProfile;
 }
 
@@ -32,7 +32,7 @@ export interface Address {
 
 export interface UserPreferences {
   language: string;
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   notifications: boolean;
   newsletter: boolean;
 }
@@ -41,9 +41,9 @@ export interface SearchQuery {
   id: string;
   query: string;
   expectedResults: number;
-  category: 'valid' | 'invalid' | 'edge-case' | 'performance';
+  category: "valid" | "invalid" | "edge-case" | "performance";
   description: string;
-  expectedBehavior: 'pass' | 'fail';
+  expectedBehavior: "pass" | "fail";
 }
 
 export interface UrlData {
@@ -92,7 +92,7 @@ export interface AccessibilityResult {
 
 export interface AccessibilityViolation {
   id: string;
-  impact: 'minor' | 'moderate' | 'serious' | 'critical';
+  impact: "minor" | "moderate" | "serious" | "critical";
   description: string;
   nodes: AccessibilityNode[];
 }

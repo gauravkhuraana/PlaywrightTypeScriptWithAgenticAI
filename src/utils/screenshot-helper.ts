@@ -1,7 +1,7 @@
-import { Page, TestInfo } from '@playwright/test';
-import { Logger } from './logger';
-import * as path from 'path';
-import * as fs from 'fs';
+import { Page, TestInfo } from "@playwright/test";
+import { Logger } from "./logger";
+import * as path from "path";
+import * as fs from "fs";
 
 /**
  * Screenshot Helper for taking and managing screenshots
@@ -15,9 +15,11 @@ export class ScreenshotHelper {
   constructor(page: Page, testInfo: TestInfo) {
     this.page = page;
     this.testInfo = testInfo;
-    this.logger = new Logger('ScreenshotHelper');
-    this.screenshotDir = path.join('test-results', 'screenshots');
-    this.logger.info(`Initializing ScreenshotHelper for test: ${testInfo.title}`);
+    this.logger = new Logger("ScreenshotHelper");
+    this.screenshotDir = path.join("test-results", "screenshots");
+    this.logger.info(
+      `Initializing ScreenshotHelper for test: ${testInfo.title}`,
+    );
     this.ensureDirectoryExists();
     this.logger.debug(`Screenshot directory: ${this.screenshotDir}`);
   }
@@ -29,9 +31,13 @@ export class ScreenshotHelper {
     if (!fs.existsSync(this.screenshotDir)) {
       this.logger.debug(`Creating screenshot directory: ${this.screenshotDir}`);
       fs.mkdirSync(this.screenshotDir, { recursive: true });
-      this.logger.success(`Screenshot directory created: ${this.screenshotDir}`);
+      this.logger.success(
+        `Screenshot directory created: ${this.screenshotDir}`,
+      );
     } else {
-      this.logger.debug(`Screenshot directory already exists: ${this.screenshotDir}`);
+      this.logger.debug(
+        `Screenshot directory already exists: ${this.screenshotDir}`,
+      );
     }
   }
 
@@ -41,15 +47,15 @@ export class ScreenshotHelper {
   async takeFullPageScreenshot(name?: string): Promise<string> {
     const screenshotName = name || `fullpage-${Date.now()}`;
     const fileName = this.generateFileName(screenshotName);
-    
+
     this.logger.info(`Taking full page screenshot: ${screenshotName}`);
     this.logger.debug(`Screenshot path: ${fileName}`);
-    
+
     try {
       await this.page.screenshot({
         path: fileName,
         fullPage: true,
-        type: 'png'
+        type: "png",
       });
 
       this.logger.success(`Full page screenshot saved: ${fileName}`);
@@ -66,15 +72,15 @@ export class ScreenshotHelper {
   async takeViewportScreenshot(name?: string): Promise<string> {
     const screenshotName = name || `viewport-${Date.now()}`;
     const fileName = this.generateFileName(screenshotName);
-    
+
     this.logger.info(`Taking viewport screenshot: ${screenshotName}`);
     this.logger.debug(`Screenshot path: ${fileName}`);
-    
+
     try {
       await this.page.screenshot({
         path: fileName,
         fullPage: false,
-        type: 'png'
+        type: "png",
       });
 
       this.logger.success(`Viewport screenshot saved: ${fileName}`);
@@ -88,24 +94,29 @@ export class ScreenshotHelper {
   /**
    * Take element screenshot
    */
-  async takeElementScreenshot(selector: string, name?: string): Promise<string> {
+  async takeElementScreenshot(
+    selector: string,
+    name?: string,
+  ): Promise<string> {
     const screenshotName = name || `element-${Date.now()}`;
     const fileName = this.generateFileName(screenshotName);
-    
+
     this.logger.info(`Taking element screenshot for selector: ${selector}`);
     this.logger.debug(`Screenshot path: ${fileName}`);
-    
+
     try {
       const element = this.page.locator(selector);
       await element.screenshot({
         path: fileName,
-        type: 'png'
+        type: "png",
       });
 
       this.logger.success(`Element screenshot saved: ${fileName}`);
       return fileName;
     } catch (error) {
-      this.logger.error(`Failed to take element screenshot for selector '${selector}': ${error}`);
+      this.logger.error(
+        `Failed to take element screenshot for selector '${selector}': ${error}`,
+      );
       throw error;
     }
   }
@@ -114,23 +125,25 @@ export class ScreenshotHelper {
    * Take screenshot on failure
    */
   async takeFailureScreenshot(): Promise<string> {
-    const testName = this.testInfo.title.replace(/[^a-zA-Z0-9]/g, '_');
+    const testName = this.testInfo.title.replace(/[^a-zA-Z0-9]/g, "_");
     const fileName = this.generateFileName(`failure-${testName}`);
-    
-    this.logger.warn(`Taking failure screenshot for test: ${this.testInfo.title}`);
+
+    this.logger.warn(
+      `Taking failure screenshot for test: ${this.testInfo.title}`,
+    );
     this.logger.debug(`Failure screenshot path: ${fileName}`);
-    
+
     try {
       await this.page.screenshot({
         path: fileName,
         fullPage: true,
-        type: 'png'
+        type: "png",
       });
 
       // Attach to test report
-      await this.testInfo.attach('failure-screenshot', {
+      await this.testInfo.attach("failure-screenshot", {
         path: fileName,
-        contentType: 'image/png'
+        contentType: "image/png",
       });
 
       this.logger.success(`Failure screenshot saved and attached: ${fileName}`);
@@ -144,18 +157,30 @@ export class ScreenshotHelper {
   /**
    * Take comparison screenshots for visual testing
    */
-  async takeComparisonScreenshot(name: string, threshold: number = 0.2): Promise<void> {
-    this.logger.info(`Taking comparison screenshot: ${name}`);
-    
-    // Use Playwright's built-in visual comparison
-    await this.page.screenshot({
-      path: this.generateFileName(`comparison-${name}`),
-      fullPage: true
-    });
+  async takeComparisonScreenshot(
+    name: string,
+    threshold: number = 0.2,
+  ): Promise<void> {
+    this.logger.info(
+      `Taking comparison screenshot: ${name} (threshold: ${threshold})`,
+    );
 
-    // Use expect().toHaveScreenshot() for actual comparison
-    // This should be called from the test itself
-    this.logger.info(`Comparison screenshot saved for: ${name}`);
+    try {
+      // Use Playwright's built-in visual comparison
+      await this.page.screenshot({
+        path: this.generateFileName(`comparison-${name}`),
+        fullPage: true,
+      });
+
+      // Use expect().toHaveScreenshot() for actual comparison
+      // This should be called from the test itself
+      this.logger.success(`Comparison screenshot saved for: ${name}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to take comparison screenshot '${name}': ${error}`,
+      );
+      throw error;
+    }
   }
 
   /**
@@ -164,30 +189,52 @@ export class ScreenshotHelper {
   async takeMobileScreenshots(name?: string): Promise<string[]> {
     const screenshotName = name || `mobile-${Date.now()}`;
     const screenshots: string[] = [];
-    
+
     const devices = [
-      { name: 'mobile-portrait', width: 375, height: 667 },
-      { name: 'mobile-landscape', width: 667, height: 375 },
-      { name: 'tablet-portrait', width: 768, height: 1024 },
-      { name: 'tablet-landscape', width: 1024, height: 768 }
+      { name: "mobile-portrait", width: 375, height: 667 },
+      { name: "mobile-landscape", width: 667, height: 375 },
+      { name: "tablet-portrait", width: 768, height: 1024 },
+      { name: "tablet-landscape", width: 1024, height: 768 },
     ];
 
-    for (const device of devices) {
-      await this.page.setViewportSize({ width: device.width, height: device.height });
-      await this.page.waitForTimeout(1000); // Wait for reflow
-      
-      const fileName = this.generateFileName(`${screenshotName}-${device.name}`);
-      await this.page.screenshot({
-        path: fileName,
-        fullPage: true,
-        type: 'png'
-      });
-      
-      screenshots.push(fileName);
-      this.logger.info(`Mobile screenshot saved: ${fileName} (${device.width}x${device.height})`);
-    }
+    this.logger.info(
+      `Taking mobile screenshots: ${screenshotName} for ${devices.length} device configurations`,
+    );
 
-    return screenshots;
+    try {
+      for (const device of devices) {
+        this.logger.debug(
+          `Setting viewport to ${device.name}: ${device.width}x${device.height}`,
+        );
+        await this.page.setViewportSize({
+          width: device.width,
+          height: device.height,
+        });
+        await this.page.waitForTimeout(1000); // Wait for reflow
+
+        const fileName = this.generateFileName(
+          `${screenshotName}-${device.name}`,
+        );
+        await this.page.screenshot({
+          path: fileName,
+          fullPage: true,
+          type: "png",
+        });
+
+        screenshots.push(fileName);
+        this.logger.success(
+          `Mobile screenshot saved: ${device.name} (${device.width}x${device.height})`,
+        );
+      }
+
+      this.logger.success(
+        `Completed mobile screenshots: ${screenshots.length} screenshots taken`,
+      );
+      return screenshots;
+    } catch (error) {
+      this.logger.error(`Failed to take mobile screenshots: ${error}`);
+      throw error;
+    }
   }
 
   /**
@@ -195,31 +242,44 @@ export class ScreenshotHelper {
    */
   async takeBeforeAfterScreenshots(
     name: string,
-    action: () => Promise<void>
+    action: () => Promise<void>,
   ): Promise<{ before: string; after: string }> {
+    this.logger.info(`Taking before/after screenshots for: ${name}`);
+
     const beforeFileName = this.generateFileName(`${name}-before`);
     const afterFileName = this.generateFileName(`${name}-after`);
 
-    // Take before screenshot
-    this.logger.info(`Taking before screenshot: ${beforeFileName}`);
-    await this.page.screenshot({
-      path: beforeFileName,
-      fullPage: true,
-      type: 'png'
-    });
+    try {
+      // Take before screenshot
+      this.logger.debug(`Taking before screenshot: ${beforeFileName}`);
+      await this.page.screenshot({
+        path: beforeFileName,
+        fullPage: true,
+        type: "png",
+      });
+      this.logger.success("Before screenshot captured");
 
-    // Perform action
-    await action();
+      // Perform action
+      this.logger.info("Executing action between screenshots");
+      await action();
 
-    // Take after screenshot
-    this.logger.info(`Taking after screenshot: ${afterFileName}`);
-    await this.page.screenshot({
-      path: afterFileName,
-      fullPage: true,
-      type: 'png'
-    });
+      // Take after screenshot
+      this.logger.debug(`Taking after screenshot: ${afterFileName}`);
+      await this.page.screenshot({
+        path: afterFileName,
+        fullPage: true,
+        type: "png",
+      });
+      this.logger.success("After screenshot captured");
 
-    return { before: beforeFileName, after: afterFileName };
+      this.logger.success(`Before/after screenshots completed for: ${name}`);
+      return { before: beforeFileName, after: afterFileName };
+    } catch (error) {
+      this.logger.error(
+        `Failed to take before/after screenshots for '${name}': ${error}`,
+      );
+      throw error;
+    }
   }
 
   /**
@@ -228,28 +288,42 @@ export class ScreenshotHelper {
   async takeTimedScreenshots(
     name: string,
     intervalMs: number,
-    durationMs: number
+    durationMs: number,
   ): Promise<string[]> {
     const screenshots: string[] = [];
     const startTime = Date.now();
     let index = 0;
 
-    this.logger.info(`Starting timed screenshots: ${name} for ${durationMs}ms`);
+    this.logger.info(
+      `Starting timed screenshots: ${name} for ${durationMs}ms at ${intervalMs}ms intervals`,
+    );
 
-    while (Date.now() - startTime < durationMs) {
-      const fileName = this.generateFileName(`${name}-${index++}`);
-      await this.page.screenshot({
-        path: fileName,
-        fullPage: true,
-        type: 'png'
-      });
-      screenshots.push(fileName);
-      
-      await this.page.waitForTimeout(intervalMs);
+    try {
+      while (Date.now() - startTime < durationMs) {
+        const fileName = this.generateFileName(`${name}-${index}`);
+        this.logger.debug(`Taking timed screenshot ${index + 1}: ${fileName}`);
+
+        await this.page.screenshot({
+          path: fileName,
+          fullPage: true,
+          type: "png",
+        });
+        screenshots.push(fileName);
+        index++;
+
+        await this.page.waitForTimeout(intervalMs);
+      }
+
+      this.logger.success(
+        `Completed timed screenshots: ${screenshots.length} screenshots taken over ${durationMs}ms`,
+      );
+      return screenshots;
+    } catch (error) {
+      this.logger.error(
+        `Failed during timed screenshots (captured ${screenshots.length} before error): ${error}`,
+      );
+      throw error;
     }
-
-    this.logger.success(`Completed timed screenshots: ${screenshots.length} screenshots taken`);
-    return screenshots;
   }
 
   /**
@@ -257,93 +331,140 @@ export class ScreenshotHelper {
    */
   async takeAnnotatedScreenshot(
     name: string,
-    annotations: Array<{ x: number; y: number; text: string }>
+    annotations: Array<{ x: number; y: number; text: string }>,
   ): Promise<string> {
-    // First take a regular screenshot
-    const fileName = this.generateFileName(name);
-    await this.page.screenshot({
-      path: fileName,
-      fullPage: true,
-      type: 'png'
-    });
+    this.logger.info(
+      `Taking annotated screenshot: ${name} with ${annotations.length} annotations`,
+    );
 
-    // Add annotations using page.evaluate
-    await this.page.evaluate((annotations) => {
-      annotations.forEach((annotation, index) => {
-        const div = document.createElement('div');
-        div.innerHTML = annotation.text;
-        div.style.position = 'absolute';
-        div.style.left = `${annotation.x}px`;
-        div.style.top = `${annotation.y}px`;
-        div.style.backgroundColor = 'yellow';
-        div.style.border = '2px solid red';
-        div.style.padding = '5px';
-        div.style.zIndex = '9999';
-        div.style.fontSize = '12px';
-        div.id = `annotation-${index}`;
-        document.body.appendChild(div);
+    try {
+      // First take a regular screenshot
+      const fileName = this.generateFileName(name);
+      this.logger.debug(`Base screenshot path: ${fileName}`);
+      await this.page.screenshot({
+        path: fileName,
+        fullPage: true,
+        type: "png",
       });
-    }, annotations);
 
-    // Take annotated screenshot
-    const annotatedFileName = this.generateFileName(`${name}-annotated`);
-    await this.page.screenshot({
-      path: annotatedFileName,
-      fullPage: true,
-      type: 'png'
-    });
+      // Add annotations using page.evaluate
+      this.logger.debug("Adding annotations to page");
+      await this.page.evaluate((annotations) => {
+        annotations.forEach((annotation, index) => {
+          const div = document.createElement("div");
+          div.innerHTML = annotation.text;
+          div.style.position = "absolute";
+          div.style.left = `${annotation.x}px`;
+          div.style.top = `${annotation.y}px`;
+          div.style.backgroundColor = "yellow";
+          div.style.border = "2px solid red";
+          div.style.padding = "5px";
+          div.style.zIndex = "9999";
+          div.style.fontSize = "12px";
+          div.id = `annotation-${index}`;
+          document.body.appendChild(div);
+        });
+      }, annotations);
 
-    // Remove annotations
-    await this.page.evaluate(() => {
-      const annotations = document.querySelectorAll('[id^="annotation-"]');
-      annotations.forEach(annotation => annotation.remove());
-    });
+      // Take annotated screenshot
+      const annotatedFileName = this.generateFileName(`${name}-annotated`);
+      this.logger.debug(`Annotated screenshot path: ${annotatedFileName}`);
+      await this.page.screenshot({
+        path: annotatedFileName,
+        fullPage: true,
+        type: "png",
+      });
 
-    this.logger.success(`Annotated screenshot saved: ${annotatedFileName}`);
-    return annotatedFileName;
+      // Remove annotations
+      this.logger.debug("Removing annotations from page");
+      await this.page.evaluate(() => {
+        const annotations = document.querySelectorAll('[id^="annotation-"]');
+        annotations.forEach((annotation) => annotation.remove());
+      });
+
+      this.logger.success(`Annotated screenshot saved: ${annotatedFileName}`);
+      return annotatedFileName;
+    } catch (error) {
+      this.logger.error(
+        `Failed to take annotated screenshot '${name}': ${error}`,
+      );
+      throw error;
+    }
   }
 
   /**
    * Generate filename for screenshot
    */
   private generateFileName(name: string): string {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const testName = this.testInfo.title.replace(/[^a-zA-Z0-9]/g, '_');
-    return path.join(this.screenshotDir, `${testName}-${name}-${timestamp}.png`);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const testName = this.testInfo.title.replace(/[^a-zA-Z0-9]/g, "_");
+    return path.join(
+      this.screenshotDir,
+      `${testName}-${name}-${timestamp}.png`,
+    );
   }
 
   /**
    * Get all screenshots for current test
    */
   getTestScreenshots(): string[] {
-    const testName = this.testInfo.title.replace(/[^a-zA-Z0-9]/g, '_');
+    const testName = this.testInfo.title.replace(/[^a-zA-Z0-9]/g, "_");
+    this.logger.debug(`Retrieving screenshots for test: ${testName}`);
+
     if (!fs.existsSync(this.screenshotDir)) {
+      this.logger.warn(
+        `Screenshot directory does not exist: ${this.screenshotDir}`,
+      );
       return [];
     }
-    
-    return fs.readdirSync(this.screenshotDir)
-      .filter(file => file.includes(testName) && file.endsWith('.png'))
-      .map(file => path.join(this.screenshotDir, file));
+
+    const screenshots = fs
+      .readdirSync(this.screenshotDir)
+      .filter((file) => file.includes(testName) && file.endsWith(".png"))
+      .map((file) => path.join(this.screenshotDir, file));
+
+    this.logger.info(
+      `Found ${screenshots.length} screenshot(s) for test: ${testName}`,
+    );
+    return screenshots;
   }
 
   /**
    * Clean up old screenshots
    */
   cleanupOldScreenshots(daysOld: number = 7): void {
+    this.logger.info(
+      `Starting cleanup of screenshots older than ${daysOld} days`,
+    );
+
     if (!fs.existsSync(this.screenshotDir)) {
+      this.logger.warn(
+        `Screenshot directory does not exist: ${this.screenshotDir}`,
+      );
       return;
     }
 
-    const cutoffTime = Date.now() - (daysOld * 24 * 60 * 60 * 1000);
-    
-    fs.readdirSync(this.screenshotDir).forEach(file => {
-      const filePath = path.join(this.screenshotDir, file);
-      const stats = fs.statSync(filePath);
-      
-      if (stats.mtime.getTime() < cutoffTime) {
-        fs.unlinkSync(filePath);
-        this.logger.info(`Cleaned up old screenshot: ${file}`);
-      }
-    });
+    const cutoffTime = Date.now() - daysOld * 24 * 60 * 60 * 1000;
+    let deletedCount = 0;
+
+    try {
+      fs.readdirSync(this.screenshotDir).forEach((file) => {
+        const filePath = path.join(this.screenshotDir, file);
+        const stats = fs.statSync(filePath);
+
+        if (stats.mtime.getTime() < cutoffTime) {
+          fs.unlinkSync(filePath);
+          deletedCount++;
+          this.logger.debug(`Deleted old screenshot: ${file}`);
+        }
+      });
+
+      this.logger.success(
+        `Cleanup completed: ${deletedCount} old screenshot(s) deleted`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to cleanup old screenshots: ${error}`);
+      throw error;
+    }
   }
 }
